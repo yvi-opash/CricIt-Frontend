@@ -3,6 +3,8 @@ import CreateTeam from "./CreateTeam";
 import { Link } from "react-router-dom";
 const URL = import.meta.env.VITE_API_URL;
 
+import '../styles/Team.css'
+
 interface Team {
   _id: string;
   teamname: string;
@@ -73,39 +75,51 @@ const Team = () => {
   }, []);
 
   return (
-    <div>
-      <div>
-          <CreateTeam/>
-    </div>
-    <Link to="/player">Next</Link>
-    <div>
-      <h2>Team List</h2>
-      <table>
+    <div className="team-page">
+
+  <div className="team-create">
+    <CreateTeam />
+  </div>
+
+  {/* <div className="team-next">
+    <Link to="/player" className="next-btn">Next</Link>
+  </div> */}
+
+  <div className="team-list-card">
+    <h2 className="team-title">Team List</h2>
+
+    <div className="table-wrapper">
+      <table className="team-table">
         <thead>
           <tr>
             <th>Team Name</th>
             <th>Created By</th>
-
             <th>Action</th>
           </tr>
         </thead>
+
         <tbody>
           {teams.map((team) => (
             <tr key={team._id}>
               <td>{team.teamname}</td>
               <td>{team.createdBy.username}</td>
-
               <td>
-                <button onClick={() => handleDelete(team._id)}>Delete</button>
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDelete(team._id)}
+                >
+                  Delete
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
-      </table>
 
+      </table>
     </div>
 
-    
+  </div>
+
 </div>
   );
 };

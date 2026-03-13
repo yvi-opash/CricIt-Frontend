@@ -1,0 +1,27 @@
+.footer {
+  @apply bg-gray-900 text-gray-300 mt-10;
+}
+
+.footer-divider {
+  @apply h-1 bg-green-500 w-full;
+}
+
+.footer-container {
+  @apply max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-8;
+}
+
+.footer-column h3 {
+  @apply text-white text-xl font-bold mb-2;
+}
+
+.footer-column h4 {
+  @apply text-white text-lg font-semibold mb-3;
+}
+
+.footer-column p {
+  @apply text-sm mb-1;
+}
+
+.footer-column a {
+  @apply block text-sm hover:text-green-400 transition mb-1;
+}

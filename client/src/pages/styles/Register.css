@@ -1,0 +1,27 @@
+.register-page {
+  @apply min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-blue-950 to-black;
+}
+
+.register-card {
+  @apply bg-slate-900 p-10 rounded-2xl shadow-2xl w-full max-w-lg border border-lime-500/30;
+}
+
+.register-title {
+  @apply text-3xl font-bold text-white mb-6 text-center;
+}
+
+.register-form {
+  @apply flex flex-col gap-4;
+}
+
+.form-group label {
+  @apply text-gray-300 text-sm;
+}
+
+.form-group input {
+  @apply w-full px-4 py-2 rounded-lg bg-slate-800 text-white border border-gray-600 focus:border-lime-500 focus:outline-none;
+}
+
+.register-btn {
+  @apply mt-4 py-3 bg-gradient-to-r from-lime-500 to-green-500 text-black font-bold rounded-lg hover:scale-105 transition;
+}

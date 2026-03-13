@@ -1,0 +1,85 @@
+/* Page */
+.toss-page{
+  @apply min-h-screen flex items-center justify-center;
+  background:#0B1D3A;
+  font-family:'Poppins',sans-serif;
+}
+
+/* Card */
+.toss-card{
+  @apply w-[460px] p-8 rounded-2xl shadow-2xl text-center;
+  background:#111;
+}
+
+/* Title */
+.toss-title{
+  @apply text-4xl mb-6;
+  font-family:'Orbitron',sans-serif;
+  color:#00C2FF;
+}
+
+/* Coin */
+.coin{
+  @apply w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center text-2xl;
+  background:#7b7d7e;
+  color:#111;
+  box-shadow:0 0 5px #00C2FF;
+  animation:spin 3s linear infinite;
+}
+
+/* Coin Spin */
+@keyframes spin{
+  from{ transform:rotateY(0deg); }
+  to{ transform:rotateY(360deg); }
+}
+
+/* Heading */
+.toss-heading{
+  @apply text-xl mt-4 mb-3 font-semibold;
+  color:#fff;
+}
+
+/* Team Box */
+.team-option{
+  @apply flex items-center justify-between p-3 mb-3 rounded-xl cursor-pointer transition;
+  border:2px solid #00C2FF;
+  color:#fff;
+}
+
+.team-option:hover{
+  background:#00C2FF;
+  color:#111;
+}
+
+/* Team Name */
+.team-name{
+  @apply text-lg font-bold;
+}
+
+/* Decision */
+.decision-box{
+  @apply flex gap-4 justify-center mt-3;
+}
+
+.decision-option{
+  @apply px-6 py-2 rounded-xl font-semibold cursor-pointer transition;
+  border:2px solid #00C2FF;
+  color:#fff;
+}
+
+.decision-option:hover{
+  background:#00C2FF;
+  color:#111;
+}
+
+/* Button */
+.play-btn{
+  @apply w-full py-3 mt-6 rounded-xl text-lg font-bold transition;
+  background:#00C2FF;
+  color:#111;
+  font-family:'Orbitron',sans-serif;
+}
+
+.play-btn:hover{
+  background:#009ed1;
+}

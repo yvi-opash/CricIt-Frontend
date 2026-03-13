@@ -1,0 +1,28 @@
+.match-page {
+  @apply min-h-screen bg-slate-950 text-white p-8;
+}
+
+.match-title {
+  @apply text-3xl font-bold mb-6;
+}
+
+.match-form {
+  @apply bg-slate-900 p-8 rounded-2xl shadow-2xl border border-cyan-500/30 max-w-3xl;
+}
+
+/* spacing */
+.match-form label {
+  @apply block text-gray-300 mt-4 mb-1;
+}
+
+.match-label {
+  @apply text-gray-300;
+}
+
+.match-input {
+  @apply w-full px-4 py-2 rounded-lg bg-slate-800 border border-gray-600 focus:border-cyan-500 outline-none;
+}
+
+.match-btn {
+  @apply mt-6 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 font-bold rounded-lg hover:scale-105 transition;
+}

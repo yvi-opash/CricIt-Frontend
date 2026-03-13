@@ -1,0 +1,43 @@
+.header {
+    @apply bg-gray-900 text-white shadow-md;
+}
+
+.header-container {
+    @apply max-w-7xl mx-auto flex items-center justify-between px-6 py-3;
+}
+
+.logo-section {
+    @apply flex flex-col;
+}
+
+.logo {
+    @apply text-2xl font-bold text-green-400 hover:text-green-300 transition;
+}
+
+.tagline {
+    @apply text-xs text-gray-300;
+}
+
+.nav-menu {
+    @apply flex gap-6 text-sm font-medium;
+}
+
+.nav-menu a {
+    @apply hover:text-green-400 transition;
+}
+
+.nav-menu .active {
+    @apply text-green-400 border-b-2 border-green-400 pb-1;
+}
+
+.user-section {
+    @apply flex items-center;
+}
+
+.live-indicator {
+    @apply bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full animate-pulse;
+}
+
+.auth-btn {
+    @apply ml-3 px-4 py-1.5 bg-green-600 hover:bg-green-500 rounded text-sm font-medium transition;
+}

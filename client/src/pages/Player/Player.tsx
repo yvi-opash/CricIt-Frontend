@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import '../styles/Player.css'
+
 
 const URL = import.meta.env.VITE_API_URL;
 
@@ -10,7 +12,7 @@ interface Player {
   playername: string;
   role: PlayerRole;
   tags: Tag;
-  // teamId: { _id: string; teamname: string };
+  teamId: { _id: string; teamname: string };
 }
 
 interface Team {
@@ -27,12 +29,12 @@ const Player = () => {
     playername: string;
     role: PlayerRole;
     tags: Tag;
-    // teamId: string;
+    teamId: string;
   }>({
     playername: "",
     role: "",
     tags: "",
-    // teamId: "",
+    teamId: "",
   });
 
   const token = localStorage.getItem("token");
@@ -82,7 +84,7 @@ const Player = () => {
 
     if (response.ok) {
       alert("Player Created");
-      setFormData({ playername: "", role: "", tags: ""});
+      setFormData({ playername: "", role: "", tags: "",teamId:""});
       fetchPlayers();
     } else {
       alert(data.msg || "Failed");
@@ -97,7 +99,7 @@ const Player = () => {
       playername: player.playername,
       role: player.role,
       tags: player.tags,
-      // teamId: player.teamId?._id,
+      teamId: player.teamId?._id,
     });
   };
 
@@ -122,7 +124,7 @@ const Player = () => {
     if (response.ok) {
       alert("Player Updated");
       setEditingPlayer(null);
-      setFormData({ playername: "", role: "", tags: "", });
+      setFormData({ playername: "", role: "", tags: "", teamId: ""});
       fetchPlayers();
     } else {
       alert(data.message || "Update Failed");
@@ -145,99 +147,96 @@ const Player = () => {
   };
 
   return (
-    <div>
-      <h2>{editingPlayer ? "Update Player" : "Create Player"}</h2>
+    <div className="player-page">
 
-      
-      <div style={{ marginBottom: "20px" }}>
-        
-        <input
-          type="text"
-          placeholder="Player Name"
-          value={formData.playername}
-          onChange={(e) =>
-            setFormData({ ...formData, playername: e.target.value })
-          }
-        />
+  <div className="player-form-card">
+    <h2 className="player-title">
+      {editingPlayer ? "Update Player" : "Create Player"}
+    </h2>
 
-    
-        <select
-          value={formData.role}
-          onChange={(e) =>
-            setFormData({ ...formData, role: e.target.value as PlayerRole })
-          }
-        >
-          <option value="">Select Role</option>
-          {roles.map((role) => (
-            <option key={role} value={role}>
-              {role}
-            </option>
-          ))}
-        </select>
+    <div className="player-form-grid">
 
-       
-        <select
-          value={formData.tags}
-          onChange={(e) =>
-            setFormData({ ...formData, tags: e.target.value as Tag })
-          }
-        >
-          <option value="">Select Tag</option>
-          {tags.map((tag) => (
-            <option key={tag} value={tag}>
-              {tag === "Wise-Captain" ? "Vice Captain" : tag}
-            </option>
-          ))}
-        </select>
+      <input
+        className="input-field"
+        type="text"
+        placeholder="Player Name"
+        value={formData.playername}
+        onChange={(e) =>
+          setFormData({ ...formData, playername: e.target.value })
+        }
+      />
 
-        
-        {/* <select
-          value={formData.teamId}
-          onChange={(e) =>
-            setFormData({ ...formData, teamId: e.target.value })
-          }
-        >
-          <option value="">Select Team</option>
+      <select
+        className="input-field"
+        value={formData.role}
+        onChange={(e) =>
+          setFormData({ ...formData, role: e.target.value as PlayerRole})
+        }
+      >
+        <option value="">Select Role</option>
+        {roles.map((role) => (
+          <option key={role} value={role}>{role}</option>
+        ))}
+      </select>
 
-          {teams.map((team) => (
-            <option key={team._id} value={team._id}>
-              {team.teamname}
-            </option>
-          ))}
-        </select> */}
+      <select
+        className="input-field"
+        value={formData.tags}
+        onChange={(e) =>
+          setFormData({ ...formData, tags: e.target.value as Tag})
+        }
+      >
+        <option value="">Select Tag</option>
+        {tags.map((tag) => (
+          <option key={tag} value={tag}>
+            {tag === "Wise-Captain" ? "Vice Captain" : tag}
+          </option>
+        ))}
+      </select>
 
-        {editingPlayer ? (
-          <>
-            <button onClick={handleUpdate}>Update</button>
-            <button
-              onClick={() => {
-                setEditingPlayer(null);
-                setFormData({
-                  playername: "",
-                  role: "",
-                  tags: "",
-                  
-                });
-              }}
-            >
-              Cancel
-            </button>
-          </>
-        ) : (
-          <button onClick={handleCreate}>Create</button>
-        )}
-      </div>
+      <select
+        className="input-field"
+        value={formData.teamId}
+        onChange={(e) =>
+          setFormData({ ...formData, teamId: e.target.value })
+        }
+      >
+        <option value="">Select Team</option>
+        {teams.map((team) => (
+          <option key={team._id} value={team._id}>
+            {team.teamname}
+          </option>
+        ))}
+      </select>
 
-    
-      <h2>Player List</h2>
+    </div>
 
-      <table border={1} cellPadding={10}>
+    <div className="player-btn-group">
+      {editingPlayer ? (
+        <>
+          <button className="update-btn" onClick={handleUpdate}>Update</button>
+          <button className="cancel-btn" onClick={() => setEditingPlayer(null)}>Cancel</button>
+        </>
+      ) : (
+        <button className="create-btn" onClick={handleCreate}>Create</button>
+      )}
+    </div>
+
+  </div>
+
+  {/* Player Table */}
+
+  <div className="player-table-card">
+    <h2 className="player-title">Player List</h2>
+
+    <div className="table-wrapper">
+      <table className="player-table">
         <thead>
           <tr>
             <th>Player</th>
             <th>Role</th>
             <th>Tags</th>
-            {/* <th>Team</th> */}
+            <th>Team</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -248,17 +247,20 @@ const Player = () => {
               <td>{p.playername}</td>
               <td>{p.role}</td>
               <td>{p.tags === "Wise-Captain" ? "Vice Captain" : p.tags}</td>
-              {/* <td>{p.teamId?.teamname}</td> */}
-
+              <td>{p.teamId?.teamname}</td>
               <td>
-                <button onClick={() => handleEdit(p)}>Edit</button>
-                <button onClick={() => handleDelete(p._id)}>Delete</button>
+                <button className="edit-btn" onClick={() => handleEdit(p)}>Edit</button>
+                <button className="delete-btn" onClick={() => handleDelete(p._id)}>Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
+
+  </div>
+
+</div>
   );
 };
 
