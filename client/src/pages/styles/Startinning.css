@@ -1,0 +1,48 @@
+.page-bg{
+  @apply min-h-screen flex items-center justify-center;
+  background-color: #f4f6f8;
+}
+
+/* Main Card */
+.form-card{
+  width: 450px;
+  @apply bg-white p-6 rounded-lg shadow-md;
+}
+
+/* Heading */
+.form-title{
+  @apply text-xl font-semibold text-center text-gray-700;
+}
+
+/* Divider */
+.title-divider{
+  height: 1px;
+  @apply bg-gray-200 my-4;
+}
+
+/* Label */
+.form-label{
+  @apply text-sm text-gray-600 mb-1 block;
+}
+
+/* Select */
+.form-select{
+  height: 40px;
+  @apply w-full border border-gray-300 rounded-md px-2 mb-4 bg-white outline-none;
+}
+
+.form-select:focus{
+  border-color: #1eaf2a;
+  box-shadow: 0 0 0 1px #1eaf2a;
+}
+
+/* Button */
+.form-btn{
+  height: 42px;
+  @apply w-full text-white font-medium rounded-md transition;
+  background-color: #1faa32;
+}
+
+.form-btn:hover{
+  background-color: #1eaf2a;
+}

@@ -64,12 +64,13 @@ import Coin from  '../../components/Coin'
       const data = await reasponce.json();
 
       if (!reasponce.ok) {
+        
       alert(data.message || "Error");
       return;
     }
 
 
-      navigate("")
+      navigate(`/startInning/${matchId}`)
       console.log({tossWinner, tossDecision});
     }
       

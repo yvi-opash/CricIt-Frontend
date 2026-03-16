@@ -11,6 +11,8 @@ import Footer from "./components/Footer";
 import PlayingTeamPage from "./pages/Match/PlayingTeam";
 import Toss from "./pages/Match/Toss";
 //import PlayingTeam from "./pages/Match/PlayingTeam";
+import AllMatch from "./pages/Match/AllMatch";
+import StartInning from "./pages/Inning/StartInning";
 
 function App() {
 
@@ -31,6 +33,8 @@ function App() {
         {/* <Route path="/playing-team/:matchId" element={<PlayingTeam />} /> */}
         <Route path="/playing-team/:matchId" element={<PlayingTeamPage />} />
         <Route path='/toss/:matchId' element={<Toss/>} />
+        <Route path="/all" element={<AllMatch/>}/>
+        <Route path="/startInning/:matchId" element={<StartInning/>}/>
       </Routes>
       <Footer />
     </BrowserRouter>
