@@ -1,0 +1,471 @@
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+
+const LiveScoring = () => {
+
+  const { matchId, inningId } = useParams();
+
+  const [score, setScore] = useState<any>({});
+  const [commentary, setCommentary] = useState<string[]>([]);
+  const [overBalls, setOverBalls] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const [showWicketModal, setShowWicketModal] = useState(false);
+  const [wicketData, setWicketData] = useState({
+    wicketType: "",
+    outPlayer: "",
+    newBatsman: ""
+  });
+
+  // ⭐ Load Score
+  const loadScore = async () => {
+    const res = await axios.get(`/api/ball/score/${inningId}`);
+    setScore(res.data);
+  };
+
+  const loadCommentary = async () => {
+    const res = await axios.get(`/api/ball/commentary/${inningId}`);
+    setCommentary(res.data);
+  };
+
+  const loadOverBalls = async () => {
+    const res = await axios.get(`/api/ball/overs/${inningId}`);
+    setOverBalls(res.data);
+  };
+
+  useEffect(() => {
+    loadScore();
+    loadCommentary();
+    loadOverBalls();
+
+    const interval = setInterval(() => {
+      loadScore();
+      loadCommentary();
+      loadOverBalls();
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // ⭐ Add Ball API
+  const addBall = async (data: any) => {
+    try {
+      setLoading(true);
+      await axios.post(`/api/ball/${matchId}/${inningId}`, data);
+      loadScore();
+      loadCommentary();
+      loadOverBalls();
+    } catch (err) {
+      alert("Error updating score");
+    }
+    setLoading(false);
+  };
+
+  // ⭐ Undo
+  const undoBall = async () => {
+    await axios.delete(`/api/ball/undo/${inningId}`);
+    loadScore();
+    loadCommentary();
+    loadOverBalls();
+  };
+
+  // ⭐ Wicket Submit
+  const handleWicket = () => {
+    addBall({
+      isWicket: true,
+      wicketType: wicketData.wicketType,
+      outPlayer: wicketData.outPlayer,
+      newBatsman: wicketData.newBatsman
+    });
+    setShowWicketModal(false);
+  };
+
+  return (
+    <div className="p-6 bg-gray-900 min-h-screen text-white">
+
+      <h1 className="text-3xl font-bold text-center mb-4">
+        LIVE SCORING
+      </h1>
+
+      {/* ⭐ Scoreboard */}
+      <div className="bg-black p-4 rounded-lg text-center mb-4">
+        <h2 className="text-4xl font-bold">
+          {score.runs} / {score.wickets}
+        </h2>
+        <p className="text-xl">Overs: {score.overs}</p>
+      </div>
+
+      {/* ⭐ Run Buttons */}
+      <div className="grid grid-cols-4 gap-3 mb-6">
+        {[0,1,2,3,4,6].map(r => (
+          <button
+            key={r}
+            onClick={() => addBall({ runsScored: r })}
+            className="bg-green-600 p-4 rounded text-xl font-bold"
+          >
+            {r}
+          </button>
+        ))}
+
+        <button
+          onClick={() => setShowWicketModal(true)}
+          className="bg-red-600 p-4 rounded font-bold"
+        >
+          W
+        </button>
+
+        <button
+          onClick={() => addBall({ extraType: "wide", extraRuns: 1 })}
+          className="bg-yellow-600 p-4 rounded"
+        >
+          WD
+        </button>
+
+        <button
+          onClick={() => addBall({ extraType: "no-ball", extraRuns: 1 })}
+          className="bg-yellow-600 p-4 rounded"
+        >
+          NB
+        </button>
+
+        <button
+          onClick={undoBall}
+          className="bg-blue-600 p-4 rounded"
+        >
+          UNDO
+        </button>
+      </div>
+
+      {/* ⭐ Over Summary */}
+      <div className="bg-gray-800 p-4 rounded mb-4">
+        <h3 className="text-xl mb-2">Current Over</h3>
+        <div className="flex gap-2">
+          {overBalls.slice(-6).map((b, i) => (
+            <span key={i} className="bg-gray-600 px-3 py-1 rounded">
+              {b.isWicket ? "W" : b.runsScored}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ⭐ Commentary */}
+      <div className="bg-gray-800 p-4 rounded h-64 overflow-y-scroll">
+        <h3 className="text-xl mb-2">Commentary</h3>
+        {commentary.map((c, i) => (
+          <p key={i} className="border-b border-gray-700 py-1">
+            {c}
+          </p>
+        ))}
+      </div>
+
+      {/* ⭐ Wicket Modal */}
+      {showWicketModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center">
+          <div className="bg-white text-black p-6 rounded">
+            <h2 className="text-xl mb-2">Wicket</h2>
+
+            <input
+              placeholder="Wicket Type"
+              className="border p-2 mb-2 w-full"
+              onChange={(e) =>
+                setWicketData({ ...wicketData, wicketType: e.target.value })
+              }
+            />
+
+            <input
+              placeholder="Out Player Id"
+              className="border p-2 mb-2 w-full"
+              onChange={(e) =>
+                setWicketData({ ...wicketData, outPlayer: e.target.value })
+              }
+            />
+
+            <input
+              placeholder="New Batsman Id"
+              className="border p-2 mb-2 w-full"
+              onChange={(e) =>
+                setWicketData({ ...wicketData, newBatsman: e.target.value })
+              }
+            />
+
+            <button
+              onClick={handleWicket}
+              className="bg-red-600 text-white p-2 rounded"
+            >
+              Confirm Wicket
+            </button>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+};
+
+export default LiveScoring;
+
+
+
+
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+
+const LiveScoring = () => {
+
+  const { matchId, inningId } = useParams();
+
+  const [score, setScore] = useState<any>({});
+  const [commentary, setCommentary] = useState<string[]>([]);
+  const [overBalls, setOverBalls] = useState<any[]>([]);
+  const [players, setPlayers] = useState<any[]>([]);
+  const [inningInfo, setInningInfo] = useState<any>({});
+
+  const [showWicketModal, setShowWicketModal] = useState(false);
+  const [showBowlerModal, setShowBowlerModal] = useState(false);
+
+  const [wicketData, setWicketData] = useState({
+    wicketType: "",
+    outPlayer: "",
+    newBatsman: ""
+  });
+
+  const [newBowler, setNewBowler] = useState("");
+
+  //  Load all data
+  const loadData = async () => {
+    const scoreRes = await axios.get(`/api/ball/score/${inningId}`);
+    setScore(scoreRes.data);
+
+    const comRes = await axios.get(`/api/ball/commentary/${inningId}`);
+    setCommentary(comRes.data);
+
+    const overRes = await axios.get(`/api/ball/overs/${inningId}`);
+    setOverBalls(overRes.data);
+
+    const playerRes = await axios.get(`/api/player`);
+    setPlayers(playerRes.data);
+
+    const inningRes = await axios.get(`/api/inning/${inningId}`);
+    setInningInfo(inningRes.data);
+  };
+
+  useEffect(() => {
+    loadData();
+    const interval = setInterval(loadData, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  //  Add Ball
+  const addBall = async (data:any) => {
+    await axios.post(`/api/ball/${matchId}/${inningId}`, data);
+    loadData();
+  };
+
+  //  Undo
+  const undoBall = async () => {
+    await axios.delete(`/api/ball/undo/${inningId}`);
+    loadData();
+  };
+
+  //  Wicket
+  const confirmWicket = () => {
+    addBall({
+      isWicket: true,
+      wicketType: wicketData.wicketType,
+      outPlayer: wicketData.outPlayer,
+      newBatsman: wicketData.newBatsman
+    });
+    setShowWicketModal(false);
+  };
+
+  //  Change Bowler
+  const changeBowler = async () => {
+    await axios.put(`/api/inning/change-bowler/${inningId}`, {
+      bowlerId: newBowler
+    });
+    setShowBowlerModal(false);
+    loadData();
+  };
+
+  //  Required Run Rate
+  const rrr =
+    inningInfo.target && score.overs
+      ? ((inningInfo.target - score.runs) /
+          (inningInfo.totalOvers - parseFloat(score.overs))).toFixed(2)
+      : null;
+
+  return (
+    <div className="bg-gray-900 min-h-screen text-white p-6">
+
+      <h1 className="text-3xl text-center mb-4 font-bold">LIVE SCORING</h1>
+
+      {/*  SCOREBOARD */}
+      <div className="bg-black p-4 rounded mb-4 text-center">
+        <h2 className="text-4xl font-bold">
+          {score.runs} / {score.wickets}
+        </h2>
+        <p>Overs : {score.overs}</p>
+
+        {inningInfo.target && (
+          <>
+            <p>Target : {inningInfo.target}</p>
+            <p>Req Run Rate : {rrr}</p>
+          </>
+        )}
+      </div>
+
+      {/*  BATSMAN INFO */}
+      <div className="flex justify-around mb-4">
+        <div className="text-green-400 font-bold">
+           {inningInfo.strikerName}
+        </div>
+        <div>{inningInfo.nonStrikerName}</div>
+        <div className="text-yellow-400">
+          Bowler : {inningInfo.bowlerName}
+        </div>
+      </div>
+
+      {/*  RUN BUTTONS */}
+      <div className="grid grid-cols-4 gap-3 mb-6">
+        {[0,1,2,3,4,6].map(r => (
+          <button
+            key={r}
+            onClick={() => addBall({ runsScored: r })}
+            className="bg-green-600 p-4 rounded text-xl"
+          >
+            {r}
+          </button>
+        ))}
+
+        <button
+          onClick={() => setShowWicketModal(true)}
+          className="bg-red-600 p-4 rounded"
+        >
+          W
+        </button>
+
+        <button
+          onClick={() => addBall({ extraType:"wide", extraRuns:1 })}
+          className="bg-yellow-600 p-4 rounded"
+        >
+          WD
+        </button>
+
+        <button
+          onClick={() => addBall({ extraType:"no-ball", extraRuns:1 })}
+          className="bg-yellow-600 p-4 rounded"
+        >
+          NB
+        </button>
+
+        <button
+          onClick={() => setShowBowlerModal(true)}
+          className="bg-purple-600 p-4 rounded"
+        >
+          Change Bowler
+        </button>
+
+        <button
+          onClick={undoBall}
+          className="bg-blue-600 p-4 rounded"
+        >
+          UNDO
+        </button>
+      </div>
+
+      {/*  OVER SUMMARY */}
+      <div className="bg-gray-800 p-3 rounded mb-4">
+        <h3 className="mb-2">Current Over</h3>
+        <div className="flex gap-2">
+          {overBalls.slice(-6).map((b:any,i:number)=>(
+            <span key={i} className="bg-gray-600 px-3 py-1 rounded">
+              {b.isWicket ? "W" : b.runsScored}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/*  SCORECARD TABLE */}
+      <div className="bg-gray-800 p-4 rounded mb-4">
+        <h3 className="mb-2">Scorecard</h3>
+        {inningInfo.batsmen?.map((p:any)=>(
+          <div key={p._id} className="flex justify-between border-b py-1">
+            <span>{p.name}</span>
+            <span>{p.runs} ({p.balls})</span>
+          </div>
+        ))}
+      </div>
+
+      {/*  COMMENTARY */}
+      <div className="bg-gray-800 p-4 rounded h-64 overflow-y-scroll">
+        <h3>Commentary</h3>
+        {commentary.map((c,i)=>(
+          <p key={i} className="border-b py-1">{c}</p>
+        ))}
+      </div>
+
+      {/*  WICKET MODAL */}
+      {showWicketModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center">
+          <div className="bg-white text-black p-6 rounded">
+            <select
+              className="border p-2 mb-2 w-full"
+              onChange={(e)=>setWicketData({...wicketData,outPlayer:e.target.value})}
+            >
+              <option>Select Out Player</option>
+              {players.map((p:any)=>(
+                <option value={p._id}>{p.playername}</option>
+              ))}
+            </select>
+
+            <select
+              className="border p-2 mb-2 w-full"
+              onChange={(e)=>setWicketData({...wicketData,newBatsman:e.target.value})}
+            >
+              <option>Select New Batsman</option>
+              {players.map((p:any)=>(
+                <option value={p._id}>{p.playername}</option>
+              ))}
+            </select>
+
+            <button
+              onClick={confirmWicket}
+              className="bg-red-600 text-white p-2 rounded"
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/*  BOWLER MODAL */}
+      {showBowlerModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center">
+          <div className="bg-white text-black p-6 rounded">
+            <select
+              className="border p-2 mb-2 w-full"
+              onChange={(e)=>setNewBowler(e.target.value)}
+            >
+              <option>Select Bowler</option>
+              {players.map((p:any)=>(
+                <option value={p._id}>{p.playername}</option>
+              ))}
+            </select>
+
+            <button
+              onClick={changeBowler}
+              className="bg-purple-600 text-white p-2 rounded"
+            >
+              Change
+            </button>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+};
+
+export default LiveScoring;
