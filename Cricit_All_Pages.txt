@@ -1,0 +1,1421 @@
+------------- Create Team -------------
+
+import { useState } from "react";
+const URL = import.meta.env.VITE_API_URL;
+
+import '../styles/CreateTeam.css';
+
+import React from "react";
+
+const CreateTeam = () => {
+  const [teamname, setTeamname] = useState("");
+
+  const handleCreateTeam = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const token = localStorage.getItem("token");
+
+    try {
+      const responce = await fetch(`${URL}/api/team/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ teamname }),
+      });
+
+      const data = await responce.json();
+
+      if (responce.ok) {
+        setTeamname("");
+        alert("team created successfully");
+      } else {
+        alert(data.msg || "failed to create team &  login first");
+      }
+    } catch (error) {
+      alert(`error: ${error}`);
+    }
+  };
+
+  return (
+    <div className="create-team-card">
+  <h2 className="create-team-title">Create Team</h2>
+
+  <form className="create-team-form" onSubmit={handleCreateTeam}>
+    
+    <div className="form-group">
+      <label>Enter Team Name</label>
+      <input
+        type="text"
+        placeholder="Team Name"
+        value={teamname}
+        onChange={(e) => setTeamname(e.target.value)}
+      />
+    </div>
+
+    <button className="add-team-btn" type="submit">
+      Add Team
+    </button>
+
+  </form>
+</div>
+  );
+};
+
+export default CreateTeam;
+
+
+---------------- Teams ---------------
+
+import { useState, useEffect } from "react";
+import CreateTeam from "./CreateTeam";
+import { Link } from "react-router-dom";
+const URL = import.meta.env.VITE_API_URL;
+
+import '../styles/Team.css'
+
+interface Team {
+  _id: string;
+  teamname: string;
+  createdBy: {
+    _id: string;
+    username: string;
+    email: string;
+  };
+  createdAt: string;
+}
+
+const Team = () => {
+  const [teams, setTeams] = useState<Team[]>([]);
+
+
+  //const navigate = useNavigate();
+
+
+
+  const fetchTeams = async () => {
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch(`${URL}/api/team/all`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setTeams(data);
+        //navigate("/player")
+      } else {
+        alert(data.msg || "Failed to fetch teams");
+      }
+    } catch (error) {
+      alert("Error: " + error);
+    }
+  };
+
+  const handleDelete = async (teamId: string) => {
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch(`${URL}/api/team/delete/${teamId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        alert("Team deleted successfully!");
+        fetchTeams();
+      } else {
+        const data = await response.json();
+        alert(data.msg || "Failed to delete ");
+      }
+    } catch (error) {
+      alert("Error: " + error);
+    }
+  };
+
+  useEffect(() => {
+    fetchTeams();
+  }, []);
+
+  return (
+    <div className="team-page">
+
+  <div className="team-create">
+    <CreateTeam />
+  </div>
+
+  {/* <div className="team-next">
+    <Link to="/player" className="next-btn">Next</Link>
+  </div> */}
+
+  <div className="team-list-card">
+    <h2 className="team-title">Team List</h2>
+
+    <div className="table-wrapper">
+      <table className="team-table">
+        <thead>
+          <tr>
+            <th>Team Name</th>
+            <th>Created By</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {teams.map((team) => (
+            <tr key={team._id}>
+              <td>{team.teamname}</td>
+              <td>{team.createdBy.username}</td>
+              <td>
+                <button
+                  className="delete-btn"
+                  onClick={() => handleDelete(team._id)}
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+
+      </table>
+    </div>
+
+  </div>
+
+</div>
+  );
+};
+
+export default Team;
+
+---------------- PLayer ---------------
+
+import { useState, useEffect } from "react";
+import '../styles/Player.css'
+
+
+const URL = import.meta.env.VITE_API_URL;
+
+type PlayerRole = "batsman" | "bowler" | "all-rounder" | "";
+type Tag = "Player" | "Captain" | "Wise-Captain" | "wicket-keeper" | "";
+
+interface Player {
+  _id: string;
+  playername: string;
+  role: PlayerRole;
+  tags: Tag;
+  teamId: { _id: string; teamname: string };
+}
+
+interface Team {
+  _id: string;
+  teamname: string;
+}
+
+const Player = () => {
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+
+  const [formData, setFormData] = useState<{
+    playername: string;
+    role: PlayerRole;
+    tags: Tag;
+    teamId: string;
+  }>({
+    playername: "",
+    role: "",
+    tags: "",
+    teamId: "",
+  });
+
+  const token = localStorage.getItem("token");
+
+  const roles: PlayerRole[] = ["batsman", "bowler", "all-rounder"];
+  const tags: Tag[] = ["Player", "Captain", "Wise-Captain", "wicket-keeper"];
+
+ 
+  const fetchPlayers = async () => {
+    const response = await fetch(`${URL}/api/player/all/`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) setPlayers(data);
+  };
+
+  
+  const fetchTeams = async () => {
+    const response = await fetch(`${URL}/api/team/all`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) setTeams(data);
+  };
+
+  useEffect(() => {
+    fetchPlayers();
+    fetchTeams();
+  }, []);
+
+
+  const handleCreate = async () => {
+    const response = await fetch(`${URL}/api/player/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert("Player Created");
+      setFormData({ playername: "", role: "", tags: "",teamId:""});
+      fetchPlayers();
+    } else {
+      alert(data.msg || "Failed");
+    }
+  };
+
+
+  const handleEdit = (player: Player) => {
+    setEditingPlayer(player);
+
+    setFormData({
+      playername: player.playername,
+      role: player.role,
+      tags: player.tags,
+      teamId: player.teamId?._id,
+    });
+  };
+
+
+  const handleUpdate = async () => {
+    if (!editingPlayer) return;
+
+    const response = await fetch(
+      `${URL}/api/player/update/${editingPlayer._id}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert("Player Updated");
+      setEditingPlayer(null);
+      setFormData({ playername: "", role: "", tags: "", teamId: ""});
+      fetchPlayers();
+    } else {
+      alert(data.message || "Update Failed");
+    }
+  };
+
+
+  const handleDelete = async (id: string) => {
+    const response = await fetch(`${URL}/api/player/delete/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.ok) {
+      alert("Player Deleted");
+      fetchPlayers();
+    }
+  };
+
+  return (
+    <div className="player-page">
+
+  <div className="player-form-card">
+    <h2 className="player-title">
+      {editingPlayer ? "Update Player" : "Create Player"}
+    </h2>
+
+    <div className="player-form-grid">
+
+      <input
+        className="input-field"
+        type="text"
+        placeholder="Player Name"
+        value={formData.playername}
+        onChange={(e) =>
+          setFormData({ ...formData, playername: e.target.value })
+        }
+      />
+
+      <select
+        className="input-field"
+        value={formData.role}
+        onChange={(e) =>
+          setFormData({ ...formData, role: e.target.value as PlayerRole})
+        }
+      >
+        <option value="">Select Role</option>
+        {roles.map((role) => (
+          <option key={role} value={role}>{role}</option>
+        ))}
+      </select>
+
+      <select
+        className="input-field"
+        value={formData.tags}
+        onChange={(e) =>
+          setFormData({ ...formData, tags: e.target.value as Tag})
+        }
+      >
+        <option value="">Select Tag</option>
+        {tags.map((tag) => (
+          <option key={tag} value={tag}>
+            {tag === "Wise-Captain" ? "Vice Captain" : tag}
+          </option>
+        ))}
+      </select>
+
+      <select
+        className="input-field"
+        value={formData.teamId}
+        onChange={(e) =>
+          setFormData({ ...formData, teamId: e.target.value })
+        }
+      >
+        <option value="">Select Team</option>
+        {teams.map((team) => (
+          <option key={team._id} value={team._id}>
+            {team.teamname}
+          </option>
+        ))}
+      </select>
+
+    </div>
+
+    <div className="player-btn-group">
+      {editingPlayer ? (
+        <>
+          <button className="update-btn" onClick={handleUpdate}>Update</button>
+          <button className="cancel-btn" onClick={() => setEditingPlayer(null)}>Cancel</button>
+        </>
+      ) : (
+        <button className="create-btn" onClick={handleCreate}>Create</button>
+      )}
+    </div>
+
+  </div>
+
+  {/* Player Table */}
+
+  <div className="player-table-card">
+    <h2 className="player-title">Player List</h2>
+
+    <div className="table-wrapper">
+      <table className="player-table">
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Role</th>
+            <th>Tags</th>
+            <th>Team</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {players.map((p) => (
+            <tr key={p._id}>
+              <td>{p.playername}</td>
+              <td>{p.role}</td>
+              <td>{p.tags === "Wise-Captain" ? "Vice Captain" : p.tags}</td>
+              <td>{p.teamId?.teamname}</td>
+              <td>
+                <button className="edit-btn" onClick={() => handleEdit(p)}>Edit</button>
+                <button className="delete-btn" onClick={() => handleDelete(p._id)}>Delete</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</div>
+  );
+};
+
+export default Player;
+
+
+---------------- CreateMatch ---------------
+
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import '../styles/CreateMatch.css'
+
+
+const URL = import.meta.env.VITE_API_URL;
+
+type MatchType = "odi" | "t20" | "box" | "simple";
+
+interface Team {
+  _id: string;
+  teamname: string;
+}
+const CreateMatch = () => {
+  const matchtypes: MatchType[] = ["odi", "t20", "simple", "box"];
+
+  const navigate = useNavigate();
+
+  const [team, setTeam] = useState<Team[]>([]);
+  const [formData, setFormData] = useState<{
+    teamA: string;
+    teamB: string;
+    venue: string;
+    matchDate: string;
+    matchType: string;
+    totalOverInMatch: number;
+  }>({
+    teamA: "",
+    teamB: "",
+    venue: "",
+    matchDate: "",
+    matchType: "",
+    totalOverInMatch: 20,
+  });
+
+  const token = localStorage.getItem("token");
+
+  const fetchTeam = async () => {
+    const responce = await fetch(`${URL}/api/team/all`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await responce.json();
+    setTeam(data);
+  };
+
+  useEffect(() => {
+    fetchTeam();
+  }, []);
+
+  const handleCreateMatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const responce = await fetch(`${URL}/api/match/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await responce.json();
+
+    if (responce.ok) {
+      alert("match Created");
+      setFormData({
+        teamA: "",
+        teamB: "",
+        venue: "",
+        matchDate: "",
+        matchType: "",
+        totalOverInMatch: 20,
+      });
+      navigate(`/playing-team/${data.match._id}`)
+    } else {
+      alert(data.msg || "Failed");
+    }
+  };
+
+  return (
+    <div className="match-page">
+
+  <h2 className="match-title">Create New Match</h2>
+
+  <form className="match-form" onSubmit={handleCreateMatch}>
+
+   
+    <div className="form-group">
+      <label className="match-label">Select Team 1</label>
+      <select
+        className="match-input"
+        value={formData.teamA}
+        onChange={(e) =>
+          setFormData({ ...formData, teamA: e.target.value })
+        }
+      >
+        <option value="">Select</option>
+        {team.map((team) => (
+          <option key={team._id} value={team._id}>
+            {team.teamname}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    
+    <div className="form-group">
+      <label className="match-label">Select Team 2</label>
+      <select
+        className="match-input"
+        value={formData.teamB}
+        onChange={(e) =>
+          setFormData({ ...formData, teamB: e.target.value })
+        }
+      >
+        <option value="">Select</option>
+        {team.map((team) => (
+          <option key={team._id} value={team._id}>
+            {team.teamname}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    
+    <div className="form-group">
+      <label className="match-label">Enter Venue</label>
+      <input
+        className="match-input"
+        type="text"
+        placeholder="Enter Venue"
+        value={formData.venue}
+        onChange={(e) =>
+          setFormData({ ...formData, venue: e.target.value })
+        }
+      />
+    </div>
+
+    
+    <div className="form-group">
+      <label className="match-label">Match Date</label>
+      <input
+        className="match-input"
+        type="date"
+        value={formData.matchDate}
+        onChange={(e) =>
+          setFormData({ ...formData, matchDate: e.target.value })
+        }
+      />
+    </div>
+
+   
+    <div className="form-group">
+      <label className="match-label">Select Match Type</label>
+      <select
+        className="match-input"
+        value={formData.matchType}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            matchType: e.target.value as MatchType,
+          })
+        }
+      >
+        <option value="">Select</option>
+        {matchtypes.map((type) => (
+          <option key={type} value={type}>
+            {type}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    
+    <div className="form-group">
+      <label className="match-label">Total Overs</label>
+      <input
+        className="match-input"
+        type="number"
+        placeholder="Total Number of Overs"
+        value={formData.totalOverInMatch}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            totalOverInMatch: Number(e.target.value),
+          })
+        }
+      />
+    </div>
+
+    <button className="match-btn" type="submit">
+      Create Match
+    </button>
+
+  </form>
+
+</div>
+  );
+};
+
+export default CreateMatch;
+
+
+---------------- Playing Team ---------------
+
+import  { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import '../styles/PlayingTeam.css'
+
+const URL = import.meta.env.VITE_API_URL;
+
+interface Player {
+  _id: string;
+  playername: string;
+}
+
+interface Match {
+  _id: string;
+  teamA: {
+    _id: string;
+    teamname: string;
+  };
+  teamB: {
+    _id: string;
+    teamname: string;
+  };
+}
+
+const PlayingTeamPage = () => {
+  const { matchId } = useParams(); //----- Dynamic URL FEtch Kare From All URL
+
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+
+  const [match, setMatch] = useState<Match | null>(null);
+
+  const [teamAPlayers, setTeamAPlayers] = useState<Player[]>([]);
+  const [teamBPlayers, setTeamBPlayers] = useState<Player[]>([]);
+
+  const [selectedA, setSelectedA] = useState<string[]>([]);
+  const [selectedB, setSelectedB] = useState<string[]>([]);
+
+  
+  const fetchMatch = async () => {
+    const res = await fetch(`${URL}/api/match/detail/${matchId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await res.json();
+    setMatch(data);
+  };
+
+  
+
+
+  const fetchPlayers = async (teamId: string, type: "A" | "B") => {
+    const res = await fetch(`${URL}/api/player/team/${teamId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await res.json();
+    console.log(data)
+
+    if (type === "A") setTeamAPlayers(data);
+    else setTeamBPlayers(data);
+  };
+
+  useEffect(() => {
+    fetchMatch();
+  }, []);
+
+  useEffect(() => {
+    if (match) {
+      fetchPlayers(match.teamA._id, "A");
+      fetchPlayers(match.teamB._id, "B");
+    }
+  }, [match]);
+
+  
+  const handleSelect = (
+    playerId: string,
+    teamType: "A" | "B"
+  ) => {
+    if (teamType === "A") {
+      if (selectedA.includes(playerId)) {
+        setSelectedA(selectedA.filter((id) => id !== playerId));
+      } else {
+        if (selectedA.length >= 11) return alert("Only 11 players allowed");
+        setSelectedA([...selectedA, playerId]);
+      }
+    } else {
+      if (selectedB.includes(playerId)) {
+        setSelectedB(selectedB.filter((id) => id !== playerId));
+      } else {
+        if (selectedB.length >= 11) return alert("Only 11 players allowed");
+        setSelectedB([...selectedB, playerId]);
+      }
+    }
+  };
+
+  
+
+const submitPlayingTeam = async () => {
+  if (!match) return;
+
+  // if (selectedA.length !== 11) {
+  //   return alert("Team A must have 11 players");
+  // }
+
+  // if (selectedB.length !== 11) {
+  //   return alert("Team B must have 11 players");
+  // }
+
+
+
+  const res = await fetch(`${URL}/api/match/team/${matchId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      playingTeamA: selectedA,
+      playingTeamB: selectedB,
+    }),
+  });
+
+  const data = await res.json();
+  console.log(data);
+
+  if (!res.ok) {
+    alert(data.message || "Error selecting team");
+    return;
+  }
+
+  alert("Playing Team Selwected...");
+  navigate(`/toss/${matchId}`);
+};
+
+
+  return (
+    <div className="playing-team-page">
+
+  <h2 className="playing-title">Playing Team Selection</h2>
+
+  <div className="playing-container">
+
+    {/* Team A */}
+    <div className="team-box">
+      <h3 className="team-heading">Team A Players</h3>
+
+      {teamAPlayers.map((p) => (
+        <div key={p._id} className="player-row">
+          <input
+            className="player-checkbox"
+            type="checkbox"
+            onChange={() => handleSelect(p._id, "A")}
+          />
+          <span className="player-name">{p.playername}</span>
+        </div>
+      ))}
+
+    </div>
+
+    {/* Team B */}
+    <div className="team-box">
+      <h3 className="team-heading">Team B Players</h3>
+
+      {teamBPlayers.map((p) => (
+        <div key={p._id} className="player-row">
+          <input
+            className="player-checkbox"
+            type="checkbox"
+            onChange={() => handleSelect(p._id, "B")}
+          />
+          <span className="player-name">{p.playername}</span>
+        </div>
+      ))}
+
+    </div>
+
+  </div>
+
+  <button className="submit-playing-btn" onClick={submitPlayingTeam}>
+    Submit Playing Team
+  </button>
+
+</div>
+  );
+};
+
+export default PlayingTeamPage;
+
+
+---------------- Toss ---------------
+
+  import React from 'react'
+  import { useState, useEffect } from 'react'
+  import { useNavigate, useParams } from "react-router-dom";
+  const URL = import.meta.env.VITE_API_URL;
+  import '../styles/Toss.css'
+import Coin from  '../../components/Coin'
+
+
+  interface Match {
+    _id: string;
+    teamA: {
+      _id: string;
+      teamname: string;
+    };
+    teamB: {
+      _id: string;
+      teamname: string;
+    };
+  }
+
+  const Toss = () => {
+
+    const navigate = useNavigate();
+    const token = localStorage.getItem("token");
+      const { matchId } = useParams();
+
+
+    const [match, setMatch] = useState<Match | null>(null);  
+    const [tossWinner, setTossWinner] = useState("");
+    const [tossDecision, settossDecision] = useState("");
+
+
+
+
+    const fetchMatch = async () => {
+
+      
+
+      const responce = await fetch(`${URL}/api/match/detail/${matchId}`, {
+        headers: {Authorization : `Bearer ${token}`}
+      });
+
+      const data = await responce.json();
+      setMatch(data);
+    }
+
+      useEffect(() => {
+      fetchMatch();
+    }, []);
+
+
+    const handlSubmit = async(e: React.FormEvent) => {
+      e.preventDefault();
+
+      const reasponce = await fetch(`${URL}/api/match/toss/${matchId}`, {
+        method : "POST",
+        headers : {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body : JSON.stringify({tossWinner, tossDecision})
+      })
+
+      const data = await reasponce.json();
+
+      if (!reasponce.ok) {
+        
+      alert(data.message || "Error");
+      return;
+    }
+
+
+      navigate(`/startInning/${matchId}`)
+      console.log({tossWinner, tossDecision});
+    }
+      
+    return (
+
+      <div className="toss-page">
+
+  <div className="toss-card">
+
+    <h1 className="toss-title">MATCH TOSS</h1>
+
+      <h2 className="coin-heading">Tap To Flip a Coin</h2>
+    <div className="coin"><Coin/></div>
+
+    <form onSubmit={handlSubmit}>
+
+      <h2 className="toss-heading">Who Won The Toss?</h2>
+
+      {match && (
+        <div>
+
+          <label className="team-option">
+            <span className="team-name">{match.teamA.teamname}</span>
+            <input type="radio" name="tossWinner"
+              value={match.teamA._id}
+              onChange={(e)=>setTossWinner(e.target.value)}
+            />
+          </label>
+
+          <label className="team-option">
+            <span className="team-name">{match.teamB.teamname}</span>
+            <input type="radio" name="tossWinner"
+              value={match.teamB._id}
+              onChange={(e)=>setTossWinner(e.target.value)}
+            />
+          </label>
+
+        </div>
+      )}
+
+      <h2 className="toss-heading">Decision</h2>
+
+      <div className="decision-box">
+
+        <label className="decision-option">
+          Bat
+          <input type="radio" name="Choose" value="bat"
+            className="ml-2"
+            onChange={(e)=>settossDecision(e.target.value)}
+          />
+        </label>
+
+        <label className="decision-option">
+          Bowl
+          <input type="radio" name="Choose" value="bowl"
+            className="ml-2"
+            onChange={(e)=>settossDecision(e.target.value)}
+          />
+        </label>
+
+      </div>
+
+      <button className="play-btn">LET'S PLAY</button>
+
+    </form>
+
+  </div>
+
+</div>
+    )
+  }
+
+  export default Toss;
+
+
+---------------- Start Inning ---------------
+
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import '../styles/Startinning.css'
+
+const URL = import.meta.env.VITE_API_URL;
+
+interface Player {
+  _id: string;
+  playername: string;
+}
+
+interface Match {
+  _id: string;
+  teamA: { _id: string; teamname: string };
+  teamB: { _id: string; teamname: string };
+  tossWinner: string;
+  tossDecision: "bat" | "bowl";
+  playingTeamA: Player[];
+  playingTeamB: Player[];
+}
+
+const StartInning = () => {
+  const { matchId } = useParams();
+  const token = localStorage.getItem("token");
+
+  const navigate = useNavigate();
+
+  const [battingPlayers, setBattingPlayers] = useState<Player[]>([]);
+  const [bowlingPlayers, setBowlingPlayers] = useState<Player[]>([]);
+
+  const [formData, setFormData] = useState({
+    striker: "",
+    nonStriker: "",
+    currentBowler: "",
+  });
+
+  useEffect(() => {
+    fetchMatch();
+  }, []);
+
+  const fetchMatch = async () => {
+    try {
+      const response = await fetch(`${URL}/api/match/detail/${matchId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const match: Match = await response.json();
+
+      let batting: Player[] = [];
+let bowling: Player[] = [];
+
+const opponent =
+  match.tossWinner.toString() !== match.teamA._id.toString()
+    ? match.teamB._id
+    : match.teamA._id;
+
+if (match.tossDecision === "bat") {
+  batting =
+    match.tossWinner.toString() === match.teamA._id.toString()
+      ? match.playingTeamA
+      : match.playingTeamB;
+
+  bowling =
+    match.tossWinner.toString() === match.teamA._id.toString()
+      ? match.playingTeamB
+      : match.playingTeamA;
+
+} else {
+  batting =
+    opponent.toString() === match.teamA._id.toString()
+      ? match.playingTeamA
+      : match.playingTeamB;
+
+  bowling =
+    opponent.toString() === match.teamA._id.toString()
+      ? match.playingTeamB
+      : match.playingTeamA;
+}
+
+setBattingPlayers(batting);
+setBowlingPlayers(bowling);
+    } catch (error) {
+      console.log("Error loading players");
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const startinning = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (formData.striker === formData.nonStriker) {
+      return alert("Striker and Non-Striker cannot be same");
+    }
+
+    try {
+      const response = await fetch(`${URL}/api/inning/create/${matchId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return alert(data.message);
+        navigate(``);
+      }
+
+      alert("Inning Started Successfully");
+    } catch (error) {
+      alert("Error starting inning");
+    }
+  };
+
+  return (
+    <div className="page-bg">
+  <div className="form-card">
+
+    <h2 className="form-title">Start Inning</h2>
+    <div className="title-divider"></div>
+
+    <form onSubmit={startinning}>
+
+      <label className="form-label">Striker</label>
+      <select name="striker" onChange={handleChange} className="form-select">
+        <option value="">Select Striker</option>
+        {battingPlayers.map((p) => (
+          <option key={p._id} value={p._id}>
+            {p.playername}
+          </option>
+        ))}
+      </select>
+
+      <label className="form-label">Non-Striker</label>
+      <select name="nonStriker" onChange={handleChange} className="form-select">
+        <option value="">Select Non-Striker</option>
+        {battingPlayers.map((p) => (
+          <option key={p._id} value={p._id}>
+            {p.playername}
+          </option>
+        ))}
+      </select>
+
+      <label className="form-label">Opening Bowler</label>
+      <select name="currentBowler" onChange={handleChange} className="form-select">
+        <option value="">Select Opening Bowler</option>
+        {bowlingPlayers.map((p) => (
+          <option key={p._id} value={p._id}>
+            {p.playername}
+          </option>
+        ))}
+      </select>
+
+      <button type="submit" className="form-btn">
+        Start Inning
+      </button>
+
+    </form>
+
+  </div>
+</div>
+  );
+};
+
+export default StartInning;
+
+
+---------------- LiveScore ---------------
+
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+
+const URL = import.meta.env.VITE_API_URL;
+
+const LiveScore = () => {
+  const { matchId, inningId } = useParams();
+
+  const [score, setScore] = useState<any>({});
+  const [overBall, setOverBall] = useState<any[]>([]);
+  const [players, setPlayers] = useState<any[]>([]);
+  const [inningInfo, setInningInfo] = useState<any>({});
+  const [commentry, setCommentry] = useState<string[]>([]);
+
+  const [wicket, setWicket] = useState(false);
+  const [bowler, setBowler] = useState(false);
+
+  const [wicketData, setWicketData] = useState({
+    wicketType: "",
+    outPlayer: "",
+    newBatsman: "",
+  });
+
+  const [newBowler, setNewBowler] = useState("");
+
+  const loadData = async () => {
+    const scoreRes = await axios.get(`${URL}/api/ball/score/${inningId}`);
+    setScore(scoreRes.data);
+
+    const commentryRes = await axios.get(
+      `${URL}/api/ball/commentry/${inningId}`,
+    );
+    setCommentry(commentryRes.data);
+
+    const overRes = await axios.get(`${URL}/api/ball/overs/${inningId}`);
+    setOverBall(overRes.data);
+
+    const playerRes = await axios.get(`${URL}/api/player/all`);
+    setPlayers(playerRes.data);
+
+    const inningRes = await axios.get(`${URL}/api/inning/${inningId}`);
+    setInningInfo(inningRes.data);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const addBall = async (data: any) => {
+    await axios.post(`${URL}/api/ball/${matchId}/${inningId}`, data);
+    loadData();
+  };
+
+  const undoBall = async () => {
+    await axios.delete(`${URL}/api/ball/undo/${inningId}`);
+    loadData();
+  };
+
+  const confirmWicket = () => {
+    addBall({
+      isWicket: true,
+      wicketType: wicketData.wicketType,
+      outPlayer: wicketData.outPlayer,
+      newBatsman: wicketData.newBatsman,
+    });
+    setWicket(false);
+  };
+
+  const changeBowler = async () => {
+    await axios.put(`${URL}/api/inning/change-bowler/${inningId}`, {
+      bowlerId: newBowler,
+    });
+    setBowler(false);
+    loadData();
+  };
+
+  const Crr = score.overs
+    ? (score.runs / parseFloat(score.overs)).toFixed(2)
+    : null;
+
+  const rrr =
+    inningInfo.target && score.overs
+      ? (
+          (inningInfo.target - score.runs) /
+          (inningInfo.totalOvers - parseFloat(score.overs))
+        ).toFixed(2)
+      : null;
+
+  return (
+    <>
+      <div>
+        <h1>Live Score</h1>
+
+        <div>
+          <h2>
+            {score.runs || 0} / {score.wickets || 0}{" "}
+          </h2>
+          <p>Overs : {score.overs}</p>
+
+          {inningInfo.target && (
+            <>
+              <p>Target : {inningInfo.target}</p>
+              <p>
+                RRR : {rrr} || CRR : {Crr}
+              </p>
+            </>
+          )}
+        </div>
+
+        <div>
+          <div>{inningInfo.strikerName}</div>
+          <div>{inningInfo.nonStrikerName}</div>
+          <div>Bowler : {inningInfo.bowlerName}</div>
+        </div>
+
+        <div>
+          {[0, 1, 2, 3, 4, 6].map((r) => (
+            <button key={r} onClick={() => addBall({ runsScored: r })}>
+              {r}
+            </button>
+          ))}
+
+          <button onClick={() => setWicket(true)}>W</button>
+
+          <button onClick={() => addBall({ extraType: "wide", extraRuns: 1 })}>
+            WD
+          </button>
+
+          <button
+            onClick={() => addBall({ extraType: "no-ball", extraRuns: 1 })}
+          >
+            NB
+          </button>
+
+          <button onClick={() => setBowler(true)}>Change Bowler</button>
+
+          <button onClick={undoBall}>Undo</button>
+        </div>
+
+        <div>
+            <h3>Corrent Over</h3>
+            <div>
+                {overBall.slice(-6).map((b,i) => (
+                    <span key={i}>
+                        {b.isWicket ? "W" : b.runsScored }
+                    </span>
+                ))}
+            </div>
+        </div>
+
+
+
+        <div>
+          <h3>Scorecard</h3>
+          {inningInfo.batsmen?.map((player: any) => (
+            <div key={player._id}>
+              {player.name} - {player.runs} ({player.balls})
+            </div>
+          ))}
+        </div>
+
+
+        <div>
+          <h3>Commentry</h3>
+          {commentry.map((c, i) => (
+            <p key={i}>{c}</p>
+          ))}
+        </div>
+
+        {wicket && (
+          <div>
+            <h3>Wicket</h3>
+            <select
+              onChange={(e) =>
+                setWicketData({ ...wicketData, outPlayer: e.target.value })
+              }
+            >
+              <option>Select Out Player</option>
+              {players.map((p) => (
+                <option key={p._id} value={p._id}>
+                  {p.playername}
+                </option>
+              ))}
+            </select>
+
+            <select
+              onChange={(e) =>
+                setWicketData({ ...wicketData, newBatsman: e.target.value })
+              }
+            >
+              <option>Select New Batsman</option>
+              {players.map((p) => (
+                <option key={p._id} value={p._id}>
+                  {p.playername}
+                </option>
+              ))}
+            </select>
+
+            <button onClick={confirmWicket}>Confirm</button>
+          </div>
+        )}
+
+        {bowler && (
+                      <div>
+            <h3>Change Bowler</h3>
+            <select
+              onChange={(e) => setNewBowler(e.target.value)}
+              value={newBowler}
+            >
+              <option>Select Bowler</option>
+              {players.map((p) => (
+                <option key={p._id} value={p._id}>
+                  {p.playername}
+                </option>
+              ))}
+            </select>
+
+            <button onClick={changeBowler}>Confirm</button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
+
+export default LiveScore;
+

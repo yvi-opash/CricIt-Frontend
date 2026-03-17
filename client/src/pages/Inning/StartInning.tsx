@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import '../styles/Startinning.css'
 
 const URL = import.meta.env.VITE_API_URL;
@@ -22,6 +22,8 @@ interface Match {
 const StartInning = () => {
   const { matchId } = useParams();
   const token = localStorage.getItem("token");
+
+  const navigate = useNavigate();
 
   const [battingPlayers, setBattingPlayers] = useState<Player[]>([]);
   const [bowlingPlayers, setBowlingPlayers] = useState<Player[]>([]);
@@ -104,11 +106,13 @@ setBowlingPlayers(bowling);
       });
 
       const data = await response.json();
+      const inningId = data.inning._id
 
       if (!response.ok) {
         return alert(data.message);
+        
       }
-
+      navigate(`/live-score/${matchId}/${inningId}`)
       alert("Inning Started Successfully");
     } catch (error) {
       alert("Error starting inning");

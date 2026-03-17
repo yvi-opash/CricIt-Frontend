@@ -36,7 +36,7 @@ function App() {
         <Route path='/toss/:matchId' element={<Toss/>} />
         <Route path="/all" element={<AllMatch/>}/>
         <Route path="/startInning/:matchId" element={<StartInning/>}/>
-       <Route path="/live-scoring/:matchId/:inningId" element={<LiveScoring />} />
+       <Route path="/live-score/:matchId/:inningId" element={<LiveScoring />} />
       </Routes>
       <Footer />
     </BrowserRouter>

@@ -1,0 +1,107 @@
+.live-container {
+  @apply p-6 bg-gray-100 min-h-screen;
+}
+
+.live-title {
+  @apply text-3xl font-bold mb-6 text-center text-gray-800;
+}
+
+.score-box {
+  @apply bg-white p-5 rounded-xl shadow-md text-center mb-6;
+}
+
+.score-main {
+  @apply text-4xl font-bold text-blue-600;
+}
+
+.overs-text {
+  @apply text-gray-600 mt-2;
+}
+
+.target-text {
+  @apply text-green-600 font-semibold;
+}
+
+.rr-text {
+  @apply text-purple-600 font-semibold;
+}
+
+.player-box {
+  @apply flex justify-around bg-white p-4 rounded-xl shadow mb-6;
+}
+
+.player-name {
+  @apply font-semibold text-lg;
+}
+
+.bowler-name {
+  @apply text-red-500 font-semibold;
+}
+
+.run-buttons {
+  @apply flex flex-wrap gap-3 justify-center mb-6;
+}
+
+.run-btn {
+  @apply bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600;
+}
+
+.wicket-btn {
+  @apply bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600;
+}
+
+.extra-btn {
+  @apply bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600;
+}
+
+.action-btn {
+  @apply bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600;
+}
+
+.undo-btn {
+  @apply bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-900;
+}
+
+.over-box {
+  @apply bg-white p-4 rounded-xl shadow mb-6;
+}
+
+.section-title {
+  @apply text-xl font-bold mb-3 text-gray-700;
+}
+
+.over-balls {
+  @apply flex gap-2;
+}
+
+.ball-item {
+  @apply bg-gray-200 px-3 py-1 rounded-full font-semibold;
+}
+
+.scorecard-box {
+  @apply bg-white p-4 rounded-xl shadow mb-6;
+}
+
+.scorecard-row {
+  @apply border-b py-2;
+}
+
+.commentry-box {
+  @apply bg-white p-4 rounded-xl shadow mb-6 max-h-48 overflow-y-auto;
+}
+
+.comment-line {
+  @apply text-sm border-b py-1;
+}
+
+.popup-box {
+  @apply bg-white p-5 rounded-xl shadow-md mb-6;
+}
+
+.select-input {
+  @apply w-full border p-2 rounded-lg mb-3;
+}
+
+.confirm-btn {
+  @apply bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600;
+}
