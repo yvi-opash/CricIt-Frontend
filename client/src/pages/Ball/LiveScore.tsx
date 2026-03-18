@@ -200,7 +200,7 @@ const LiveScore = () => {
         </div>
       </div>
  
-      {/* ── Right: Scorecard ── */}
+      
       <div className="scorecard-box">
         <h3 className="section-title">Scorecard</h3>
         {inningInfo.batsmen?.map((player: any) => (
@@ -211,7 +211,7 @@ const LiveScore = () => {
         ))}
       </div>
  
-      {/* ── Full-width Commentary ── */}
+      
       <div className="commentry-box">
         <h3 className="section-title">Commentary</h3>
         {commentry.map((c, i) => (
@@ -219,9 +219,9 @@ const LiveScore = () => {
         ))}
       </div>
  
-    </div>{/* end live-grid */}
+    </div>
  
-    {/* ── Wicket Popup ── */}
+    
     {wicket && (
       <div className="popup-box">
         <div className="popup-card">
@@ -264,7 +264,7 @@ const LiveScore = () => {
       </div>
     )}
  
-    {/* ── Over Done → New Bowler Popup ── */}
+    
     {overDone && (
       <div className="popup-box">
         <div className="popup-card">
