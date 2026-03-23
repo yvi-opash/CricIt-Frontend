@@ -133,9 +133,11 @@ const LiveScore = () => {
           {inningInfo.target && (
             <>
               <p className="target-text">Target : {inningInfo.target}</p>
-              <p className="rr-text">RRR : {rrr} &nbsp;|&nbsp; CRR : {Crr}</p>
+              <p className="rr-text"> | RRR : {rrr}</p>
             </>
+            
           )}
+          <p className="rr-text">CRR : {Crr} </p>
         </div>
       </div>
  
@@ -208,7 +210,9 @@ const LiveScore = () => {
             <span>{player.name}</span>
             <span>{player.runs} ({player.balls})</span>
           </div>
+          
         ))}
+        
       </div>
  
       

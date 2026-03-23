@@ -11,7 +11,8 @@ const Register = () => {
     email: "",
     age: "",
     phone : "",
-    password : ""
+    password : "",
+    city: ""
   })
 
 
@@ -30,7 +31,7 @@ const navigate = useNavigate();
       const data = await response.json()
       if (response.ok) {
         alert("Registration successful!");
-        setFormData({ username: "", email: "", age: "", phone: "", password: "" })
+        setFormData({ username: "", email: "", age: "", phone: "", password: "", city: "" })
         navigate('/login');
       } else {
         alert(data.msg || "Registration failed")
@@ -90,6 +91,12 @@ const navigate = useNavigate();
             setFormData({ ...formData, age: e.target.value })
           }
         />
+      </div>
+
+      <div className='form-group'>
+        <label >City</label>
+        <input type="text" value={formData.city}
+        onChange={(e) => setFormData({...formData, city: e.target.value})} />
       </div>
 
       <div className="form-group">

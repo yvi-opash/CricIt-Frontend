@@ -49,7 +49,10 @@ const [bowlingPlayers, setBowlingPlayers] = useState<Player[]>([]);
       const match: Match = await response.json();
 
       let batting: Player[] = [];
-let bowling: Player[] = [];
+      let bowling: Player[] = [];
+
+
+
 
 const opponent =
   match.tossWinner.toString() !== match.teamA._id.toString()

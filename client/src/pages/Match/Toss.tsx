@@ -75,39 +75,7 @@ import Coin from  '../../components/Coin'
     }
       
     return (
-      // <div>
-      //   <h1>Toss</h1>
-      //     <form onSubmit={handlSubmit}>
-      //       <h2>Who Won The Toss?</h2>
-      //       <div>
-      //         {match && (
-      //           <>
-      //             <label>{match.teamA.teamname}
-      //               <input type="radio" name="tossWinner" value={match.teamA._id} onChange={(e) => setTossWinner(e.target.value)} />
-      //             </label>
-
-      //             <label>{match.teamB.teamname}
-      //               <input type="radio" name="tossWinner" value={match.teamB._id} onChange={(e) => setTossWinner(e.target.value)} />
-      //             </label>
-      //           </>
-      //         )}
-      //       </div>
-
-      //       <h2>Winner Team Choose ?</h2>
-      //       <div>
-      //         <label >Bat
-      //           <input type="radio" name="Choose" value="bat" onChange={(e) => settossDecision(e.target.value )} />
-      //         </label>
-
-      //         <label >Bowl
-      //           <input type="radio" name="Choose" value="bowl" onChange={(e) => settossDecision(e.target.value)} />
-      //         </label>
-      //       </div>
-      //       <div>
-      //         <button>Let`s play</button>
-      //       </div>
-      //     </form>
-      // </div>
+     
       <div className="toss-page">
 
   <div className="toss-card">

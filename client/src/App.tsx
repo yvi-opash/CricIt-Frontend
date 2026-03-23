@@ -15,6 +15,8 @@ import AllMatch from "./pages/Match/AllMatch";
 import StartInning from "./pages/Inning/StartInning";
 import LiveScoring from "./pages/Ball/LiveScore";
 import  LiveHeader  from "./components/LiveHeader";
+import OneMatchCard from "./components/OneMatchCard";
+import Profile from "./pages/User/Profile";
 
 function App() {
 
@@ -29,16 +31,16 @@ function App() {
         <Route path="/" element={<Home/>}/>
         <Route path="/register" element={<Register/>}/>
         <Route path="/login" element={<Login/>}/>
+        <Route path="/77777" element={<OneMatchCard/>}/>
         <Route path="/team" element={<Team/>}/>
         <Route path="/player" element={<Player/>}/>
         <Route path="/match" element={<CreateMatch/>}/>
-        {/* <Route path="/play" element={<PlayingTeam/>} /> */}
-        {/* <Route path="/playing-team/:matchId" element={<PlayingTeam />} /> */}
         <Route path="/playing-team/:matchId" element={<PlayingTeamPage />} />
         <Route path='/toss/:matchId' element={<Toss/>} />
         <Route path="/all" element={<AllMatch/>}/>
         <Route path="/startInning/:matchId" element={<StartInning/>}/>
        <Route path="/live-score/:matchId/:inningId" element={<LiveScoring />} />
+       <Route path="/profile" element={<Profile/>}/>
       </Routes>
       <Footer />
     </BrowserRouter>

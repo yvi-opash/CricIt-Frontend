@@ -19,7 +19,7 @@ const LiveHeader = () => {
 
   const getLiveMatches = async () => {
     try {
-      const res = await fetch(`${URL}/api/match/all`, {
+      const res = await fetch(`${URL}/api/match/live`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -52,7 +52,7 @@ const LiveHeader = () => {
 
   const showScore = (m: any) => {
     if (!m.inning)
-      return `${m.teamA.teamname} Vs ${m.teamB.teamname} - Match Live`;
+      return `${m.teamA.teamname} Vs ${m.teamB.teamname} - Strting Soon`;
 
     const batTeam =
       m.inning.battingTeam === m.teamA._id
@@ -64,7 +64,7 @@ const LiveHeader = () => {
     return `${m.teamA.teamname} vs ${m.teamB.teamname} - ${batTeam} ${m.inning.totalRuns}/${m.inning.totalWickets} (${overs})`;
   };
 
-  if (liveMatches.length === 0) return `no Live..........`;
+  if (liveMatches.length === 0) return `no Live Matches..........`;
 
   return (
     <div className="ticker">

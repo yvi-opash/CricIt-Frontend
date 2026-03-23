@@ -383,9 +383,10 @@
 }
 
 .commentry-box::-webkit-scrollbar { width: 5px; }
+/* .commentry-box::-webkit-scrollbar { height: 500px; } */
 .commentry-box::-webkit-scrollbar-track { background: var(--surface2); border-radius: 4px; }
 .commentry-box::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-.commentry-box::-webkit-scrollbar-thumb:hover { background: var(--orange); }
+.commentry-box::-webkit-scrollbar-thumb { background: var(--orange); }
 
 .comment-line {
   font-size: 13px;

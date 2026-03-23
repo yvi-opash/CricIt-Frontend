@@ -1,0 +1,107 @@
+/* Profile.css */
+
+.profile-page {
+  min-height: 100vh;
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse 55% 35% at 85% 8%, rgba(249,115,22,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 25% at 8% 92%, rgba(249,115,22,0.05) 0%, transparent 55%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.profile-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 24px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.2), inset 4px 0 0 var(--orange);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Avatar circle ── */
+.profile-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(249,115,22,0.15);
+  border: 2px solid rgba(249,115,22,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--orange-lt);
+}
+
+/* ── Card heading ── */
+.profile-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.profile-title::before {
+  content: '';
+  width: 4px;
+  height: 24px;
+  background: var(--orange);
+  border-radius: 2px;
+}
+
+/* ── Divider ── */
+.profile-divider {
+  height: 1px;
+  background: var(--border);
+  width: 100%;
+}
+
+/* ── Info rows ── */
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.profile-row:last-child { border-bottom: none; }
+
+.profile-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted-lt);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.profile-value {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--white);
+  text-align: right;
+}
+
+/* ── No user fallback ── */
+.profile-empty {
+  font-size: 14px;
+  color: var(--muted-lt);
+  text-align: center;
+  padding: 20px 0;
+}
