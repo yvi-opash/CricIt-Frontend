@@ -5,14 +5,14 @@ import '../styles/CreateMatch.css'
 
 const URL = import.meta.env.VITE_API_URL;
 
-type MatchType = "odi" | "t20" | "box" | "simple";
+type MatchType = "odi" | "t20" | "box-cricket" | "gully-cricket";
 
 interface Team {
   _id: string;
   teamname: string;
 }
 const CreateMatch = () => {
-  const matchtypes: MatchType[] = ["odi", "t20", "simple", "box"];
+  const matchtypes: MatchType[] = ["odi", "t20", "gully-cricket", "box-cricket"];
 
   const navigate = useNavigate();
 
