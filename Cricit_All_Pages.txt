@@ -66,8 +66,7 @@ const CreateTeam = () => {
 export default CreateTeam;
 
 
-
----------------- Teams ---------------
+---------------- Team ---------------
 
 import { useState, useEffect } from "react";
 import CreateTeam from "./CreateTeam";
@@ -196,7 +195,6 @@ const Team = () => {
 };
 
 export default Team;
-
 
 ---------------- PLayer ---------------
 
@@ -471,70 +469,209 @@ export default Player;
 
 ---------------- CreateMatch ---------------
 
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import '../styles/CreateMatch.css'
+
+
 const URL = import.meta.env.VITE_API_URL;
 
-import '../styles/CreateTeam.css';
+type MatchType = "odi" | "t20" | "box-cricket" | "gully-cricket";
 
-import React from "react";
+interface Team {
+  _id: string;
+  teamname: string;
+}
+const CreateMatch = () => {
+  const matchtypes: MatchType[] = ["odi", "t20", "gully-cricket", "box-cricket"];
 
-const CreateTeam = () => {
-  const [teamname, setTeamname] = useState("");
+  const navigate = useNavigate();
 
-  const handleCreateTeam = async (e: React.FormEvent) => {
+  const [team, setTeam] = useState<Team[]>([]);
+  const [formData, setFormData] = useState<{
+    teamA: string;
+    teamB: string;
+    venue: string;
+    matchDate: string;
+    matchType: string;
+    totalOverInMatch: number;
+  }>({
+    teamA: "",
+    teamB: "",
+    venue: "",
+    matchDate: "",
+    matchType: "",
+    totalOverInMatch: 20,
+  });
+
+  const token = localStorage.getItem("token");
+
+  const fetchTeam = async () => {
+    const responce = await fetch(`${URL}/api/team/all`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    const data = await responce.json();
+    setTeam(data);
+  };
+
+  useEffect(() => {
+    fetchTeam();
+  }, []);
+
+  const handleCreateMatch = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const token = localStorage.getItem("token");
+    const responce = await fetch(`${URL}/api/match/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(formData),
+    });
 
-    try {
-      const responce = await fetch(`${URL}/api/team/create`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ teamname }),
+    const data = await responce.json();
+
+    if (responce.ok) {
+      alert("match Created");
+      setFormData({
+        teamA: "",
+        teamB: "",
+        venue: "",
+        matchDate: "",
+        matchType: "",
+        totalOverInMatch: 20,
       });
-
-      const data = await responce.json();
-
-      if (responce.ok) {
-        setTeamname("");
-        alert("team created successfully");
-      } else {
-        alert(data.msg || "failed to create team &  login first");
-      }
-    } catch (error) {
-      alert(`error: ${error}`);
+      navigate(`/playing-team/${data.match._id}`)
+    } else {
+      alert(data.msg || "Failed");
     }
   };
 
   return (
-    <div className="create-team-card">
-  <h2 className="create-team-title">Create Team</h2>
+    <div className="match-page">
 
-  <form className="create-team-form" onSubmit={handleCreateTeam}>
+  <h2 className="match-title">Create New Match</h2>
+
+  <form className="match-form" onSubmit={handleCreateMatch}>
+
+   
+    <div className="form-group">
+      <label className="match-label">Select Team 1</label>
+      <select
+        className="match-input"
+        value={formData.teamA}
+        onChange={(e) =>
+          setFormData({ ...formData, teamA: e.target.value })
+        }
+      >
+        <option value="">Select</option>
+        {team.map((team) => (
+          <option key={team._id} value={team._id}>
+            {team.teamname}
+          </option>
+        ))}
+      </select>
+    </div>
+
     
     <div className="form-group">
-      <label>Enter Team Name</label>
+      <label className="match-label">Select Team 2</label>
+      <select
+        className="match-input"
+        value={formData.teamB}
+        onChange={(e) =>
+          setFormData({ ...formData, teamB: e.target.value })
+        }
+      >
+        <option value="">Select</option>
+        {team.map((team) => (
+          <option key={team._id} value={team._id}>
+            {team.teamname}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    
+    <div className="form-group">
+      <label className="match-label">Enter Venue</label>
       <input
+        className="match-input"
         type="text"
-        placeholder="Team Name"
-        value={teamname}
-        onChange={(e) => setTeamname(e.target.value)}
+        placeholder="Enter Venue"
+        value={formData.venue}
+        onChange={(e) =>
+          setFormData({ ...formData, venue: e.target.value })
+        }
       />
     </div>
 
-    <button className="add-team-btn" type="submit">
-      Add Team
+    
+    <div className="form-group">
+      <label className="match-label">Match Date</label>
+      <input
+        className="match-input"
+        type="date"
+        value={formData.matchDate}
+        onChange={(e) =>
+          setFormData({ ...formData, matchDate: e.target.value })
+        }
+      />
+    </div>
+
+   
+    <div className="form-group">
+      <label className="match-label">Select Match Type</label>
+      <select
+        className="match-input"
+        value={formData.matchType}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            matchType: e.target.value as MatchType,
+          })
+        }
+      >
+        <option value="">Select</option>
+        {matchtypes.map((type) => (
+          <option key={type} value={type}>
+            {type}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    
+    <div className="form-group">
+      <label className="match-label">Total Overs</label>
+      <input
+        className="match-input"
+        type="number"
+        placeholder="Total Number of Overs"
+        value={formData.totalOverInMatch}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            totalOverInMatch: Number(e.target.value),
+          })
+        }
+      />
+    </div>
+
+    <button className="match-btn" type="submit">
+      Create Match
     </button>
 
   </form>
+
 </div>
   );
 };
 
-export default CreateTeam;
+export default CreateMatch;
+
 
 
 
@@ -588,8 +725,6 @@ const PlayingTeamPage = () => {
   };
 
   
-
-
   const fetchPlayers = async (teamId: string, type: "A" | "B") => {
     const res = await fetch(`${URL}/api/player/team/${teamId}`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -639,16 +774,6 @@ const PlayingTeamPage = () => {
 
 const submitPlayingTeam = async () => {
   if (!match) return;
-
-  // if (selectedA.length !== 11) {
-  //   return alert("Team A must have 11 players");
-  // }
-
-  // if (selectedB.length !== 11) {
-  //   return alert("Team B must have 11 players");
-  // }
-
-
 
   const res = await fetch(`${URL}/api/match/team/${matchId}`, {
     method: "POST",
@@ -808,7 +933,7 @@ import Coin from  '../../components/Coin'
     }
       
     return (
-
+     
       <div className="toss-page">
 
   <div className="toss-card">
@@ -883,7 +1008,7 @@ import Coin from  '../../components/Coin'
 
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import '../styles/Startinning.css'
+import "../styles/Startinning.css";
 
 const URL = import.meta.env.VITE_API_URL;
 
@@ -892,11 +1017,16 @@ interface Player {
   playername: string;
 }
 
+interface Team {
+  _id: string;
+  teamname: string;
+}
+
 interface Match {
   _id: string;
-  teamA: { _id: string; teamname: string };
-  teamB: { _id: string; teamname: string };
-  tossWinner: string;
+  teamA: Team;
+  teamB: Team;
+  tossWinner: Team | string;
   tossDecision: "bat" | "bowl";
   playingTeamA: Player[];
   playingTeamB: Player[];
@@ -905,12 +1035,12 @@ interface Match {
 const StartInning = () => {
   const { matchId } = useParams();
   const token = localStorage.getItem("token");
-
   const navigate = useNavigate();
 
-  const [battingPlayers, setBattingPlayers] = useState<Player[]>([]);
-  const [bowlingPlayers, setBowlingPlayers] = useState<Player[]>([]);
-
+  const [strikerOptions, setStrikerOptions] = useState<Player[]>([]);
+  const [nonStrikerOptions, setNonStrikerOptions] = useState<Player[]>([]);
+  const [bowlerOptions, setBowlerOptions] = useState<Player[]>([]);
+  
   const [formData, setFormData] = useState({
     striker: "",
     nonStriker: "",
@@ -918,10 +1048,10 @@ const StartInning = () => {
   });
 
   useEffect(() => {
-    fetchMatch();
+    loadMatchData();
   }, []);
 
-  const fetchMatch = async () => {
+  const loadMatchData = async () => {
     try {
       const response = await fetch(`${URL}/api/match/detail/${matchId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -929,41 +1059,56 @@ const StartInning = () => {
 
       const match: Match = await response.json();
 
-      let batting: Player[] = [];
-let bowling: Player[] = [];
+      const teamAId = match.teamA._id;
+      const teamBId = match.teamB._id;
 
-const opponent =
-  match.tossWinner.toString() !== match.teamA._id.toString()
-    ? match.teamB._id
-    : match.teamA._id;
+      let winnerTeamId: string;
+      if (
+        typeof match.tossWinner === "object" &&
+        match.tossWinner &&
+        "_id" in match.tossWinner
+      ) {
+        winnerTeamId = (match.tossWinner as Team)._id;
+      } else {
+        winnerTeamId = match.tossWinner as string;
+      }
 
-if (match.tossDecision === "bat") {
-  batting =
-    match.tossWinner.toString() === match.teamA._id.toString()
-      ? match.playingTeamA
-      : match.playingTeamB;
+      // console.log("Toss Winner:", winnerTeamId);
+      // console.log("Team A :", teamAId);
+      // console.log("Team B :", teamBId);
+      // console.log(" Decision:", match.tossDecision);
 
-  bowling =
-    match.tossWinner.toString() === match.teamA._id.toString()
-      ? match.playingTeamB
-      : match.playingTeamA;
+      let battingTeamPlayers: Player[] = [];
+      let bowlingTeamPlayers: Player[] = [];
 
-} else {
-  batting =
-    opponent.toString() === match.teamA._id.toString()
-      ? match.playingTeamA
-      : match.playingTeamB;
+      if (match.tossDecision === "bat") {
+        if (winnerTeamId === teamAId) {
+          battingTeamPlayers = match.playingTeamA;
+          bowlingTeamPlayers = match.playingTeamB;
+        } else {
+          battingTeamPlayers = match.playingTeamB;
+          bowlingTeamPlayers = match.playingTeamA;
+        }
+      } else if (match.tossDecision === "bowl") {
+        if (winnerTeamId === teamAId) {
+          battingTeamPlayers = match.playingTeamB;
+          bowlingTeamPlayers = match.playingTeamA;
+        } else {
+          battingTeamPlayers = match.playingTeamA;
+          bowlingTeamPlayers = match.playingTeamB;
+        }
+      }
 
-  bowling =
-    opponent.toString() === match.teamA._id.toString()
-      ? match.playingTeamB
-      : match.playingTeamA;
-}
 
-setBattingPlayers(batting);
-setBowlingPlayers(bowling);
+      setStrikerOptions(battingTeamPlayers);
+      setNonStrikerOptions(battingTeamPlayers);
+      setBowlerOptions(bowlingTeamPlayers);
+
+     
     } catch (error) {
-      console.log("Error loading players");
+      console.error("Error loading match:", error);
+      alert("Error loading match data");
+      
     }
   };
 
@@ -971,15 +1116,28 @@ setBowlingPlayers(bowling);
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const startinning = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!formData.striker) {
+      alert(" select a striker");
+      return;
+    }
+    if (!formData.nonStriker) {
+      alert(" select a non-striker");
+      return;
+    }
+    if (!formData.currentBowler) {
+      alert(" select a bowler");
+      return;
+    }
     if (formData.striker === formData.nonStriker) {
-      return alert("Striker and Non-Striker cannot be same");
+      alert("Striker and Non-Striker must be different players");
+      return;
     }
 
     try {
-      const response = await fetch(`${URL}/api/inning/create/${matchId}`, {
+      const response = await fetch(`${URL}/api/inning/start/${matchId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -991,63 +1149,80 @@ setBowlingPlayers(bowling);
       const data = await response.json();
 
       if (!response.ok) {
-        return alert(data.message);
-        navigate(``);
+        alert(data.message || "Failed to start inning");
+        return;
       }
 
-      alert("Inning Started Successfully");
+      alert("Inning started successfully!");
+      const inningId = data.inning._id;
+      navigate(`/live-score/${matchId}/${inningId}`);
     } catch (error) {
+      console.error("Error:", error);
       alert("Error starting inning");
     }
   };
 
   return (
     <div className="page-bg">
-  <div className="form-card">
+      <div className="form-card">
+        <h2 className="form-title">Start Inning</h2>
+        <div className="title-divider"></div>
 
-    <h2 className="form-title">Start Inning</h2>
-    <div className="title-divider"></div>
+        <form onSubmit={handleSubmit}>
+          <label className="form-label">Striker</label>
+          <select
+            name="striker"
+            onChange={handleChange}
+            className="form-select"
+            value={formData.striker}
+            required
+          >
+            <option value="">Select Striker</option>
+            {strikerOptions.map((player) => (
+              <option key={player._id} value={player._id}>
+                {player.playername}
+              </option>
+            ))}
+          </select>
 
-    <form onSubmit={startinning}>
+          <label className="form-label">Non-Striker</label>
+          <select
+            name="nonStriker"
+            onChange={handleChange}
+            className="form-select"
+            value={formData.nonStriker}
+            required
+          >
+            <option value="">Select Non-Striker</option>
+            {nonStrikerOptions.map((player) => (
+              <option key={player._id} value={player._id}>
+                {player.playername}
+              </option>
+            ))}
+          </select>
 
-      <label className="form-label">Striker</label>
-      <select name="striker" onChange={handleChange} className="form-select">
-        <option value="">Select Striker</option>
-        {battingPlayers.map((p) => (
-          <option key={p._id} value={p._id}>
-            {p.playername}
-          </option>
-        ))}
-      </select>
+          <label className="form-label">Opening Bowler</label>
+          <select
+            name="currentBowler"
+            onChange={handleChange}
+            className="form-select"
+            value={formData.currentBowler}
+            required
+          >
+            <option value="">Select Opening Bowler</option>
+            {bowlerOptions.map((player) => (
+              <option key={player._id} value={player._id}>
+                {player.playername}
+              </option>
+            ))}
+          </select>
 
-      <label className="form-label">Non-Striker</label>
-      <select name="nonStriker" onChange={handleChange} className="form-select">
-        <option value="">Select Non-Striker</option>
-        {battingPlayers.map((p) => (
-          <option key={p._id} value={p._id}>
-            {p.playername}
-          </option>
-        ))}
-      </select>
-
-      <label className="form-label">Opening Bowler</label>
-      <select name="currentBowler" onChange={handleChange} className="form-select">
-        <option value="">Select Opening Bowler</option>
-        {bowlingPlayers.map((p) => (
-          <option key={p._id} value={p._id}>
-            {p.playername}
-          </option>
-        ))}
-      </select>
-
-      <button type="submit" className="form-btn">
-        Start Inning
-      </button>
-
-    </form>
-
-  </div>
-</div>
+          <button type="submit" className="form-btn">
+            Start Inning
+          </button>
+        </form>
+      </div>
+    </div>
   );
 };
 
@@ -1056,7 +1231,7 @@ export default StartInning;
 
 ---------------- LiveScore ---------------
 
-import '../styles/LiveScore.css'
+import "../styles/LiveScore.css";
 
 import axios from "axios";
 import { useEffect, useState } from "react";
@@ -1067,7 +1242,7 @@ const URL = import.meta.env.VITE_API_URL;
 const LiveScore = () => {
   const { matchId, inningId } = useParams();
 
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem("token");
 
   const [score, setScore] = useState<any>({});
   const [overBall, setOverBall] = useState<any[]>([]);
@@ -1076,7 +1251,7 @@ const LiveScore = () => {
   const [commentry, setCommentry] = useState<string[]>([]);
 
   const [wicket, setWicket] = useState(false);
-  const [bowler, setBowler] = useState(false);
+  const [overDone, setOverDone] = useState(false);
 
   const [wicketData, setWicketData] = useState({
     wicketType: "",
@@ -1090,17 +1265,19 @@ const LiveScore = () => {
     const scoreRes = await axios.get(`${URL}/api/ball/score/${inningId}`);
     setScore(scoreRes.data);
 
-    const commentryRes = await axios.get(`${URL}/api/ball/commentary/${inningId}`,  );
+    const commentryRes = await axios.get(
+      `${URL}/api/ball/commentary/${inningId}`,
+    );
     setCommentry(commentryRes.data);
 
     const overRes = await axios.get(`${URL}/api/ball/overs/${inningId}`);
     setOverBall(overRes.data);
 
     const playerRes = await axios.get(`${URL}/api/player/all`, {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     setPlayers(playerRes.data);
 
     const inningRes = await axios.get(`${URL}/api/inning/${inningId}`);
@@ -1113,15 +1290,25 @@ const LiveScore = () => {
 
   const addBall = async (data: any) => {
     try {
-      await axios.post(`${URL}/api/ball/add/${matchId}/${inningId}`, data);
+      const res = await axios.post(
+        `${URL}/api/ball/add/${matchId}/${inningId}`,
+        data,
+      );
       loadData();
+
+      const updatedInning = res.data.inning;
+      if (
+        updatedInning.ballsInCurrentOver === 0 &&
+        updatedInning.status === "ongoing"
+      ) {
+        setOverDone(true);
+      }
     } catch (err: any) {
       const msg = err?.response?.data?.message ?? "Failed to add ball";
       alert(msg);
-      loadData(); 
+      loadData();
     }
   };
-
   const undoBall = async () => {
     await axios.delete(`${URL}/api/ball/undo/${inningId}`);
     loadData();
@@ -1138,10 +1325,13 @@ const LiveScore = () => {
   };
 
   const changeBowler = async () => {
+    if (!newBowler) return alert("Please select a bowler");
+
     await axios.put(`${URL}/api/inning/change-bowler/${inningId}`, {
       bowlerId: newBowler,
     });
-    setBowler(false);
+    setOverDone(false);
+    setNewBowler("");
     loadData();
   };
 
@@ -1158,135 +1348,232 @@ const LiveScore = () => {
       : null;
 
   return (
-    
     <div className="live-container">
-  <h1 className="live-title">Live Score</h1>
+      <h1 className="live-title">Live Score</h1>
 
-  <div className="score-box">
-    <h2 className="score-main">
-      {score.runs || 0} / {score.wickets || 0}
-    </h2>
-    <p className="overs-text">Overs : {score.overs}</p>
+      <div className="live-grid">
+        <div className="score-box">
+          <h2 className="score-main">
+            {score.runs || 0} / {score.wickets || 0}
+          </h2>
+          <div className="score-right">
+            <p className="overs-text">Overs : {score.overs}</p>
+            {inningInfo.target && (
+              <>
+                <p className="target-text">Target : {inningInfo.target}</p>
+                <p className="rr-text"> | RRR : {rrr}</p>
+              </>
+            )}
+            <p className="rr-text">CRR : {Crr} </p>
+          </div>
+        </div>
 
-    {inningInfo.target && (
-      <>
-        <p className="target-text">Target : {inningInfo.target}</p>
-        <p className="rr-text">
-          RRR : {rrr} || CRR : {Crr}
-        </p>
-      </>
-    )}
-  </div>
+        <div className="player-box">
+          <p className="player-box-header">At the Crease</p>
 
-  <div className="player-box">
-    <div className="player-name">{inningInfo.striker?.playername}</div>
-    <div className="player-name">{inningInfo.nonStriker?.playername}</div>
-    <div className="bowler-name">Bowler : {inningInfo.currentBowler?.playername}</div>
-  </div>
+          <div className={`player-name striker`}>
+            <span className="dot"></span>
+            {inningInfo.striker?.playername}
+            <span className="on-strike">*</span>
+          </div>
 
-  <div className="run-buttons">
-    {[0, 1, 2, 3, 4, 6].map((r) => (
-      <button className="run-btn" key={r} onClick={() => addBall({ runsScored: r })}>
-        {r}
-      </button>
-    ))}
+          <div className="player-name">
+            <span className="dot"></span>
+            {inningInfo.nonStriker?.playername}
+          </div>
 
-    <button className="wicket-btn" onClick={() => setWicket(true)}>W</button>
+          <div className="bowler-name">
+            <span className="dot"></span>
+            <span className="bowler-label">Bowling —&nbsp;</span>
+            {inningInfo.currentBowler?.playername}
+          </div>
+        </div>
 
-    <button className="extra-btn" onClick={() => addBall({ extraType: "wide", extraRuns: 1 })}>
-      WD
-    </button>
+        <div className="run-buttons-card">
+          <p className="run-buttons-title">Add Ball</p>
+          <div className="run-buttons">
+            {[0, 1, 2, 3, 4, 6].map((r) => (
+              <button
+                className="run-btn"
+                key={r}
+                onClick={() => addBall({ runsScored: r })}
+              >
+                {r}
+              </button>
+            ))}
 
-    <button className="extra-btn" onClick={() => addBall({ extraType: "no-ball", extraRuns: 1 })}>
-      NB
-    </button>
+            <button className="wicket-btn" onClick={() => setWicket(true)}>
+              W
+            </button>
 
-    <button className="action-btn" onClick={() => setBowler(true)}>Change Bowler</button>
+            <button
+              className="extra-btn"
+              onClick={() => addBall({ extraType: "wide", extraRuns: 1 })}
+            >
+              WD
+            </button>
 
-    <button className="undo-btn" onClick={undoBall}>Undo</button>
-  </div>
+            <button
+              className="extra-btn"
+              onClick={() => addBall({ extraType: "no-ball", extraRuns: 1 })}
+            >
+              NB
+            </button>
 
-  <div className="over-box">
-    <h3 className="section-title">Corrent Over</h3>
-    <div className="over-balls">
-      {overBall.slice(-6).map((b,i) => (
-        <span className="ball-item" key={i}>
-          {b.isWicket ? "W" : b.runsScored }
-        </span>
-      ))}
-    </div>
-  </div>
+            <button className="undo-btn" onClick={undoBall}>
+              ↩ Undo Last Ball
+            </button>
+          </div>
+        </div>
 
-  <div className="scorecard-box">
-    <h3 className="section-title">Scorecard</h3>
-    {inningInfo.batsmen?.map((player: any) => (
-      <div className="scorecard-row" key={player._id}>
-        {player.name} - {player.runs} ({player.balls})
+        <div className="over-box">
+          <h3 className="section-title">Current Over</h3>
+          <div className="over-balls">
+            {overBall.slice(-6).map((b, i) => (
+              <span
+                className={`ball-item ${b.isWicket ? "is-wicket" : b.runsScored === 4 ? "is-four" : b.runsScored === 6 ? "is-six" : b.extraType === "wide" ? "is-wide" : b.extraType === "no-ball" ? "is-noball" : ""}`}
+                key={i}
+              >
+                {b.isWicket
+                  ? "W"
+                  : b.extraType === "wide"
+                    ? "Wd"
+                    : b.extraType === "no-ball"
+                      ? "Nb"
+                      : b.runsScored}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <div className="scorecard-box">
+          <h3 className="section-title">Scorecard</h3>
+          {inningInfo.batsmen?.map((player: any) => (
+            <div className="scorecard-row" key={player._id}>
+              <span>{player.name}</span>
+              <span>
+                {player.runs} ({player.balls})
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="commentry-box">
+          <h3 className="section-title">Commentary</h3>
+          {commentry.map((c, i) => (
+            <p className="comment-line" key={i}>
+              {" "}
+              {c}
+            </p>
+          ))}
+        </div>
       </div>
-    ))}
-  </div>
 
-  <div className="commentry-box">
-    <h3 className="section-title">Commentry</h3>
-    {commentry.map((c, i) => (
-      <p className="comment-line" key={i}>{c}</p>
-    ))}
-  </div>
+      {wicket && (
+        <div className="popup-box">
+          <div className="popup-card">
+            <h3 className="section-title">Wicket Details</h3>
 
-  {wicket && (
-    <div className="popup-box">
-      <h3 className="section-title">Wicket</h3>
+            <select
+              className="select-input"
+              onChange={(e) =>
+                setWicketData({ ...wicketData, wicketType: e.target.value })
+              }
+            >
+              <option value="">Select Wicket Type</option>
+              {[
+                "bowled",
+                "caught",
+                "lbw",
+                "run-out",
+                "stumped",
+                "hit-wicket",
+                "retired-out",
+              ].map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
 
-      <select className="select-input"
-        onChange={(e) =>
-          setWicketData({ ...wicketData, outPlayer: e.target.value })
-        }
-      >
-        <option>Select Out Player</option>
-        {players.map((p) => (
-          <option key={p._id} value={p._id}>
-            {p.playername}
-          </option>
-        ))}
-      </select>
+            <select
+              className="select-input"
+              onChange={(e) =>
+                setWicketData({ ...wicketData, outPlayer: e.target.value })
+              }
+            >
+              <option value="">Select Out Player</option>
+              {inningInfo.striker && (
+                <option value={inningInfo.striker._id}>
+                  {inningInfo.striker.playername}
+                </option>
+              )}
+              {inningInfo.nonStriker && (
+                <option value={inningInfo.nonStriker._id}>
+                  {inningInfo.nonStriker.playername}
+                </option>
+              )}
+            </select>
 
-      <select className="select-input"
-        onChange={(e) =>
-          setWicketData({ ...wicketData, newBatsman: e.target.value })
-        }
-      >
-        <option>Select New Batsman</option>
-        {players.map((p) => (
-          <option key={p._id} value={p._id}>
-            {p.playername}
-          </option>
-        ))}
-      </select>
+            <select
+              className="select-input"
+              onChange={(e) =>
+                setWicketData({ ...wicketData, newBatsman: e.target.value })
+              }
+            >
+              <option value="">Select New Batsman</option>
+              {players
+                .filter((p) => p.teamId?._id === inningInfo.battingTeam)
+                .map((p) => (
+                  <option key={p._id} value={p._id}>
+                    {p.playername}
+                  </option>
+                ))}
+            </select>
 
-      <button className="confirm-btn" onClick={confirmWicket}>Confirm</button>
+            <button className="confirm-btn" onClick={confirmWicket}>
+              Confirm Wicket
+            </button>
+          </div>
+        </div>
+      )}
+
+      {overDone && (
+        <div className="popup-box">
+          <div className="popup-card">
+            <h3 className="section-title">Over Complete!</h3>
+            <p
+              style={{
+                color: "var(--muted)",
+                fontSize: "13px",
+                marginTop: "-8px",
+              }}
+            >
+              Select next bowler
+            </p>
+
+            <select
+              className="select-input"
+              onChange={(e) => setNewBowler(e.target.value)}
+              value={newBowler}
+            >
+              <option value="">Select Bowler</option>
+              {players
+                .filter((p) => p.teamId?._id === inningInfo.bowlingTeam)
+                .map((p) => (
+                  <option key={p._id} value={p._id}>
+                    {p.playername}
+                  </option>
+                ))}
+            </select>
+
+            <button className="confirm-btn" onClick={changeBowler}>
+              Confirm Bowler
+            </button>
+          </div>
+        </div>
+      )}
     </div>
-  )}
-
-  {bowler && (
-    <div className="popup-box">
-      <h3 className="section-title">Change Bowler</h3>
-
-      <select className="select-input"
-        onChange={(e) => setNewBowler(e.target.value)}
-        value={newBowler}
-      >
-        <option>Select Bowler</option>
-        {players.map((p) => (
-          <option key={p._id} value={p._id}>
-            {p.playername}
-          </option>
-        ))}
-      </select>
-
-      <button className="confirm-btn" onClick={changeBowler}>Confirm</button>
-    </div>
-  )}
-</div>
   );
 };
 

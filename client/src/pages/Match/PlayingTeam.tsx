@@ -46,8 +46,6 @@ const PlayingTeamPage = () => {
   };
 
   
-
-
   const fetchPlayers = async (teamId: string, type: "A" | "B") => {
     const res = await fetch(`${URL}/api/player/team/${teamId}`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -97,16 +95,6 @@ const PlayingTeamPage = () => {
 
 const submitPlayingTeam = async () => {
   if (!match) return;
-
-  // if (selectedA.length !== 11) {
-  //   return alert("Team A must have 11 players");
-  // }
-
-  // if (selectedB.length !== 11) {
-  //   return alert("Team B must have 11 players");
-  // }
-
-
 
   const res = await fetch(`${URL}/api/match/team/${matchId}`, {
     method: "POST",
