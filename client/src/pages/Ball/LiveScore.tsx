@@ -2,15 +2,14 @@ import "../styles/LiveScore.css";
 
 import axios from "axios";
 import { useEffect, useState } from "react";
-import {  useNavigate, useParams } from "react-router-dom";
-
+import { useNavigate, useParams } from "react-router-dom";
 
 const URL = import.meta.env.VITE_API_URL;
 
 const LiveScore = () => {
   const { matchId, inningId } = useParams();
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
 
@@ -22,7 +21,6 @@ const LiveScore = () => {
 
   const [wicket, setWicket] = useState(false);
   const [overDone, setOverDone] = useState(false);
-
 
   const [wicketData, setWicketData] = useState({
     wicketType: "",
@@ -59,7 +57,6 @@ const LiveScore = () => {
     loadData();
   }, []);
 
-
   const addBall = async (data: any) => {
     try {
       const res = await axios.post(
@@ -95,7 +92,7 @@ const LiveScore = () => {
     });
     setWicket(false);
   };
-  
+
   const changeBowler = async () => {
     if (!newBowler) return alert("Please select a bowler");
 
@@ -119,8 +116,15 @@ const LiveScore = () => {
         ).toFixed(2)
       : null;
 
-      console.log(inningInfo)
+  console.log(inningInfo);
 
+  const handleStartSecondInning = async () => {
+    const res = await axios.post(`${URL}/api/inning/secstart/${matchId}`);
+
+    const inningId = res.data.inning._id;
+
+    navigate(`/second-inning-setup/${matchId}/${inningId}`);
+  };
   return (
     <div className="live-container">
       <h1 className="live-title">Live Score</h1>
@@ -230,8 +234,12 @@ const LiveScore = () => {
               </span>
             </div>
           ))}
-
-          
+          {inningInfo.status === "completed" &&
+            inningInfo.inningNumber === 1 && (
+              <button onClick={handleStartSecondInning} className="undo-btn">
+                Start Second Inning
+              </button>
+            )}
         </div>
 
         <div className="commentry-box">
