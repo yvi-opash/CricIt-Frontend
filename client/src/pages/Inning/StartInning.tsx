@@ -311,15 +311,15 @@ const StartInning = () => {
     e.preventDefault();
 
     if (!formData.striker) {
-      alert("Please select a striker");
+      alert(" select a striker");
       return;
     }
     if (!formData.nonStriker) {
-      alert("Please select a non-striker");
+      alert(" select a non-striker");
       return;
     }
     if (!formData.currentBowler) {
-      alert("Please select a bowler");
+      alert(" select a bowler");
       return;
     }
     if (formData.striker === formData.nonStriker) {
