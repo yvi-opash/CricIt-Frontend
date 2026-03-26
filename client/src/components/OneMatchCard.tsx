@@ -48,18 +48,23 @@ const OneMatchCard: React.FC<OneMatchCardProps> = ({ match }) => {
   };
 
  
-  const getActionButton = () => {
-    if (status === "upcoming") {
-      return { text: "Start Match", path: `/create-match/${match._id}` };
-    } else if (status === "live") {
-      return { text: "Live Score", path: `/live-score/${match._id}` };
-    } else {
-      return { text: "View Details", path: `/match-details/${match._id}` };
-    }
-  };
+  // const getActionButton = () => {
+  //   if (status === "upcoming") {
+  //     return { text: "Start Match", path: `/create-match/${match._id}` };
+  //   } else if (status === "live") {
+  //     return { text: "Live Score", path: `/live-score/${match._id}` };
+  //   } else {
+  //     return { text: "View Details", path: `/match-details/${match._id}` };
+  //   }
+  // };
+
+
+  // const getActionButton = ()=> {
+  //     return { }
+  // }
 
   const status = match.status || "upcoming";
-  const action = getActionButton();
+  // const action = getActionButton();
 
   return (
     <div className="match-card">
@@ -99,8 +104,8 @@ const OneMatchCard: React.FC<OneMatchCardProps> = ({ match }) => {
           </div>
         </div>
 
-        <Link to={action.path} className="match-action-btn">
-          {action.text}
+        <Link to='/' className="match-action-btn">
+          Detailss
         </Link>
       </div>
     </div>

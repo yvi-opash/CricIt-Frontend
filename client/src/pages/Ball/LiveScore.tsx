@@ -2,12 +2,15 @@ import "../styles/LiveScore.css";
 
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import {  useNavigate, useParams } from "react-router-dom";
+
 
 const URL = import.meta.env.VITE_API_URL;
 
 const LiveScore = () => {
   const { matchId, inningId } = useParams();
+
+  const navigate = useNavigate()
 
   const token = localStorage.getItem("token");
 
@@ -19,6 +22,7 @@ const LiveScore = () => {
 
   const [wicket, setWicket] = useState(false);
   const [overDone, setOverDone] = useState(false);
+
 
   const [wicketData, setWicketData] = useState({
     wicketType: "",
@@ -55,6 +59,7 @@ const LiveScore = () => {
     loadData();
   }, []);
 
+
   const addBall = async (data: any) => {
     try {
       const res = await axios.post(
@@ -90,7 +95,7 @@ const LiveScore = () => {
     });
     setWicket(false);
   };
-
+  
   const changeBowler = async () => {
     if (!newBowler) return alert("Please select a bowler");
 
@@ -113,6 +118,8 @@ const LiveScore = () => {
           (inningInfo.totalOvers - parseFloat(score.overs))
         ).toFixed(2)
       : null;
+
+      console.log(inningInfo)
 
   return (
     <div className="live-container">
@@ -223,6 +230,8 @@ const LiveScore = () => {
               </span>
             </div>
           ))}
+
+          
         </div>
 
         <div className="commentry-box">

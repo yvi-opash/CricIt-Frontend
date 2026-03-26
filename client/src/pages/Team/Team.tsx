@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import CreateTeam from "./CreateTeam";
-import { Link } from "react-router-dom";
 const URL = import.meta.env.VITE_API_URL;
 
 import '../styles/Team.css'

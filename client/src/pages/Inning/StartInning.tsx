@@ -24,6 +24,9 @@ interface Match {
   playingTeamB: Player[];
 }
 
+
+
+
 const StartInning = () => {
   const { matchId } = useParams();
   const token = localStorage.getItem("token");
@@ -43,6 +46,9 @@ const StartInning = () => {
     loadMatchData();
   }, []);
 
+
+  
+
   const loadMatchData = async () => {
     try {
       const response = await fetch(`${URL}/api/match/detail/${matchId}`, {
@@ -52,7 +58,7 @@ const StartInning = () => {
       const match: Match = await response.json();
 
       const teamAId = match.teamA._id;
-      const teamBId = match.teamB._id;
+      //const teamBId = match.teamB._id;
 
       let winnerTeamId: string;
       if (
@@ -64,6 +70,8 @@ const StartInning = () => {
       } else {
         winnerTeamId = match.tossWinner as string;
       }
+
+
 
       // console.log("Toss Winner:", winnerTeamId);
       // console.log("Team A :", teamAId);
@@ -137,6 +145,7 @@ const StartInning = () => {
         },
         body: JSON.stringify(formData),
       });
+
 
       const data = await response.json();
 
