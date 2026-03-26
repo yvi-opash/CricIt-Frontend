@@ -1,0 +1,107 @@
+.match-card {
+  background: var(--white);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  width: 100%;
+  max-width: 420px;
+  font-family: 'Lato', sans-serif;
+  overflow: hidden;
+  transition: 0.25s;
+}
+
+.match-card:hover {
+  box-shadow: 0 10px 25px var(--orange-glow);
+  transform: translateY(-3px);
+}
+
+/* Header */
+.match-header {
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg2);
+}
+
+.match-type {
+  background: var(--surface);
+  color: var(--white);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 700;
+  letter-spacing: .5px;
+}
+
+/* Body */
+.match-body {
+  padding: 12px 14px;
+  background-color:cadetblue;
+}
+
+.team-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.team-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.team-flag {
+  width: 26px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: 2px;
+}
+
+.team-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.team-score {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--dark);
+}
+
+/* Live Status Text */
+.match-status-text {
+  color: var(--red);
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+/* Footer */
+.match-footer {
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  margin-top: 8px;
+}
+
+.footer-btn {
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dark);
+  cursor: pointer;
+  letter-spacing: .5px;
+  transition: 0.2s;
+}
+
+.footer-btn:hover {
+  color: var(--orange);
+}

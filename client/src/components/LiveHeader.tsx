@@ -10,11 +10,11 @@ const LiveHeader = () => {
   useEffect(() => {
     getLiveMatches();
 
-    const interval = setInterval(() => {
-      getLiveMatches();
-    }, 30000);
+    // const interval = setInterval(() => {
+    //   getLiveMatches();
+    // }, 60000);
 
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, []);
 
   const getLiveMatches = async () => {
