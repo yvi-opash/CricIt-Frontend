@@ -18,6 +18,7 @@ import LiveHeader from "./components/LiveHeader";
 
 import Profile from "./pages/User/Profile";
 import SecondInningSetup from "./pages/Inning/SecondInning";
+import MatchDetails from "./pages/MatchDetails";
 
 function App() {
   return (
@@ -39,6 +40,8 @@ function App() {
         <Route path="/live-score/:matchId/:inningId" element={<LiveScoring />}/>
         <Route path="/profile" element={<Profile />} />
         <Route path="/second-inning-setup/:matchId/:inningId" element={<SecondInningSetup/>}/>
+
+        <Route path="/match-details/:matchId" element={<MatchDetails />} />
       </Routes>
       <Footer />
     </BrowserRouter>

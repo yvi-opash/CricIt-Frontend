@@ -188,8 +188,7 @@ import { useNavigate, useParams } from "react-router-dom";
 
   return (
     <div className="live-container">
-      <h1 className="live-title">Live Score</h1>
-
+      
       {/* start 222 */}
       {inningInfo.status === "completed" && inningInfo.inningNumber === 1 && (
         <button onClick={handleStartSecondInning} className="undo-btn">
