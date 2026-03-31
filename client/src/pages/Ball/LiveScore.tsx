@@ -160,7 +160,7 @@
     const handleStartSecondInning = async () => {
       const res = await axios.post(`${URL}/api/inning/secstart/${matchId}`);
 
-    const inningId = res.data.inning._id;
+    const inningId = res.data._id;
 
       navigate(`/second-inning-setup/${matchId}/${inningId}`);
     };
@@ -204,6 +204,7 @@
         {inningInfo.inningNumber === 2 && inningInfo.status === "completed" && (
           <button onClick={handleEndMatch} className="undo-btn">end match</button>
         )}
+        
 
         <div className="live-grid">
           <div className="score-box">
