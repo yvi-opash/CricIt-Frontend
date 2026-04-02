@@ -344,7 +344,7 @@ const Home = () => {
           const isLive = match.status === "live";
           const isFinished = match.status === "finished";
 
-          // 2nd innings for target display (live only)
+          
           const inn2 = match.innings?.find((i) => i.inningNumber === 2);
           const showTarget = isLive && inn2?.target !== undefined;
 
@@ -452,7 +452,7 @@ const Home = () => {
                   className="details-btn"
                   onClick={() => handleViewDetails(match._id)}
                 >
-                  View Details →
+                  View Details 
                 </button>
               </div>
             </div>
