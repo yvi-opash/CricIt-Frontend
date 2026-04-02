@@ -107,7 +107,7 @@ const MatchDetails = () => {
                 </div>
               ))
             ) : (
-              <p className="players-empty">No player</p>
+              <p className="players-empty">No player szdfsfdsf</p>
             )}
           </div>
         ))}
