@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+ import { useParams } from "react-router-dom";
+import { getPlayerQuickStats, getPlayerAllMatches } from "../../api/playerStats";
 import '../styles/Player.css'
 
 
@@ -24,6 +26,15 @@ const Player = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
+
+
+  const [careerStats, setCareerStats] = useState<any>(null);
+  const [matchHistory, setMatchHistory] = useState<any[]>([]);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsError, setStatsError] = useState("");
+   const { playerId } = useParams<{ playerId: string }>();
+
+
 
   const [formData, setFormData] = useState<{
     playername: string;
@@ -146,6 +157,32 @@ const Player = () => {
     }
   };
 
+  //-----------------------player stats
+
+  const fetchPlayerStats = async (playerId: string) => {
+    try {
+      setStatsLoading(true);
+      const statsRes = await getPlayerQuickStats(playerId);
+      setCareerStats(statsRes.data.data.careerStats);
+      
+      const matchRes = await getPlayerAllMatches(playerId);
+      setMatchHistory(matchRes.data.data);
+      setStatsError("");
+    } catch (error: any) {
+      setStatsError(error.response?.data?.message || "Failed to fetch stats");
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+ 
+  useEffect(() => {
+    if (playerId) {
+      fetchPlayerStats(playerId);
+    }
+  }, [playerId]);
+
+  //-----------------------player stats
+
   return (
     <div className="player-page">
 
@@ -259,6 +296,68 @@ const Player = () => {
     </div>
 
   </div>
+
+  //-----------------------player stats
+
+  <div className="player-stats-section">
+          <h2>Career Statistics</h2>
+          
+          {statsLoading && <p>Loading stats...</p>}
+          {statsError && <p style={{ color: "red" }}>{statsError}</p>}
+          
+          {careerStats && (
+            <div className="stats-grid">
+              <div className="stat-card">
+                <p className="stat-label">Total Runs</p>
+                <p className="stat-value">{careerStats.totalRuns || 0}</p>
+              </div>
+              
+              <div className="stat-card">
+                <p className="stat-label">Total Wickets</p>
+                <p className="stat-value">{careerStats.totalWickets || 0}</p>
+              </div>
+              
+              <div className="stat-card">
+                <p className="stat-label">Matches</p>
+                <p className="stat-value">{careerStats.totalMatches || 0}</p>
+              </div>
+              
+              <div className="stat-card">
+                <p className="stat-label">Strike Rate</p>
+                <p className="stat-value">
+                  {careerStats.careerStrikeRate?.toFixed(2) || "0"}%
+                </p>
+              </div>
+            </div>
+          )}
+          
+          {matchHistory.length > 0 && (
+            <div className="match-history">
+              <h3>Recent Matches</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Runs</th>
+                    <th>Wickets</th>
+                    <th>Strike Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {matchHistory.map((match: any) => (
+                    <tr key={match._id}>
+                      <td>{new Date(match.createdAt).toLocaleDateString()}</td>
+                      <td>{match.runsScored}</td>
+                      <td>{match.wicketsTaken}</td>
+                      <td>{match.strikeRate?.toFixed(2)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+ //-----------------------player stats
 
 </div>
   );
