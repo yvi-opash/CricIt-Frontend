@@ -27,7 +27,10 @@ const navigate = useNavigate();
     try {
       const response = await fetch(`${URL}/api/users/register`, {
         method : "POST",
-        body : JSON.stringify(formData),
+       body: JSON.stringify({
+        ...formData,
+        age: Number(formData.age), 
+      }),
         headers : {"Content-Type" : "application/json" }
       })
       const data = await response.json()
