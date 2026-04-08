@@ -3,6 +3,9 @@ import "./styles/MatchDetailsDesign3.css";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 
+import { io } from "socket.io-client";
+
+
 interface Inning {
   _id: string;
   inningNumber: number;
@@ -26,6 +29,9 @@ interface Ball {
 }
 
 const URL = import.meta.env.VITE_API_URL;
+const socket = io(URL);
+
+
 
 const MatchDetails = () => {
   const { state } = useLocation();
@@ -97,18 +103,18 @@ const MatchDetails = () => {
   }, [innings]);
 
   // Auto-refresh live data every 3 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (innings.length > 0) {
-        const last = innings[innings.length - 1];
-        if (last?._id) {
-          fetchLiveData(last._id);
-        }
-      }
-    }, 3000);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (innings.length > 0) {
+  //       const last = innings[innings.length - 1];
+  //       if (last?._id) {
+  //         fetchLiveData(last._id);
+  //       }
+  //     }
+  //   }, 3000);
 
-    return () => clearInterval(interval);
-  }, [innings]);
+  //   return () => clearInterval(interval);
+  // }, [innings]);
 
   // Get stats for a player
   const getStats = (playerId: string) => {
@@ -142,6 +148,30 @@ const MatchDetails = () => {
   // Get ongoing inning
   const ongoingInning = innings.find((inn: any) => inn.status === "ongoing");
 
+  const teamAInning = innings.find(
+  (inn: any) => inn.battingTeam?._id === match.teamA._id
+);
+
+const teamBInning = innings.find(
+  (inn: any) => inn.battingTeam?._id === match.teamB._id
+);
+
+  // --------- socket.io 
+useEffect(() => {
+  if (!ongoingInning?._id) return;
+
+  socket.emit("joinInning", ongoingInning._id);
+
+  socket.on("scoreUpdate", () => {
+    fetchLiveData(ongoingInning._id); 
+    fetchInnings(); 
+  });
+
+  return () => {
+    socket.off("scoreUpdate");
+  };
+}, [ongoingInning]);
+
   return (
     <div className="details-page design3">
       {/* ─── BACK BUTTON ─── */}
@@ -165,7 +195,7 @@ const MatchDetails = () => {
           </h1>
         </div>
 
-        <div className="score-grid-hero">
+        {/* <div className="score-grid-hero">
           {match.innings && match.innings.length > 0 ? (
             match.innings.map((inn: any, idx: number) => (
               <div key={idx} className="score-box-hero">
@@ -200,7 +230,47 @@ const MatchDetails = () => {
               </div>
             </>
           )}
+        </div> */}
+      
+        <div className="score-grid-hero">
+  {innings && innings.length > 0 ? (
+    innings.map((inn: any, idx: number) => (
+      <div key={idx} className="score-box-hero">
+        <p className="score-label">{inn.battingTeam.teamname}</p>
+
+        <div className="score-display">
+          <span className="score-runs">{inn.totalRuns}</span>
+          <span className="score-slash">/</span>
+          <span className="score-wickets">{inn.totalWickets}</span>
         </div>
+
+        <p className="score-overs">
+          ({inn.oversCompleted}.{inn.ballsInCurrentOver} ov)
+        </p>
+      </div>
+    ))
+  ) : (
+    <>
+      <div className="score-box-hero">
+        <p className="score-label">{match.teamA.teamname}</p>
+        <div className="score-display">
+          <span className="score-runs">—</span>
+          <span className="score-slash">/</span>
+          <span className="score-wickets">—</span>
+        </div>
+      </div>
+
+      <div className="score-box-hero">
+        <p className="score-label">{match.teamB.teamname}</p>
+        <div className="score-display">
+          <span className="score-runs">—</span>
+          <span className="score-slash">/</span>
+          <span className="score-wickets">—</span>
+        </div>
+      </div>
+    </>
+  )}
+</div>
 
         {match.winner && (
           <div className="winner-badge">
