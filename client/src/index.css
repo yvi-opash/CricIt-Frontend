@@ -28,8 +28,10 @@
   /* Special */
   --gold:        #f6c90e;
   --red:         #ef4444;
-  --teal:        #2dd4bf;
+  --teal:        #ccdf63;
+  --litegold:     #c0b024;
   --blue:        #60a5fa;
+  --dullwight:   #f0ededfa;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
