@@ -2,6 +2,19 @@ import axios from "axios";
 import "./styles/MatchDetails.css";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import { io } from "socket.io-client";
 
@@ -26,6 +39,12 @@ interface Ball {
   isWicket: boolean;
   extraType?: string;
   runsScored: number;
+  extraRuns?: number;
+}
+
+interface PlayerOfMatchResult {
+  playerName: string;
+  reason?: string;
 }
 
 const URL = import.meta.env.VITE_API_URL;
@@ -41,10 +60,13 @@ const MatchDetails = () => {
   // State management
   const [scorecard, setScorecard] = useState<any[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"live" | "stats" | "players">("live");
+  const [activeTab, setActiveTab] = useState<"live" | "stats" | "players" | "charts">("live");
   const [innings, setInnings] = useState<Inning[]>([]);
   const [commentary, setCommentary] = useState<string[]>([]);
   const [currentOver, setCurrentOver] = useState<Ball[]>([]);
+  const [inningOverRuns, setInningOverRuns] = useState<Record<string, number[]>>({});
+  const [playerOfMatch, setPlayerOfMatch] = useState<PlayerOfMatchResult | null>(null);
+  const [playerOfMatchLoading, setPlayerOfMatchLoading] = useState(false);
 
   // Fetch scorecard data
   const fetchScorecard = async () => {
@@ -108,6 +130,78 @@ const MatchDetails = () => {
     }
   }, [innings]);
 
+  useEffect(() => {
+    const completedByStatus = ["finished", "completed"].includes(
+      String(state?.status || "").toLowerCase()
+    );
+    const completedByInnings = innings.length > 0 && innings.every((inn) => inn.status === "completed");
+    const isMatchCompleted = completedByStatus || completedByInnings;
+    if (!isMatchCompleted || !matchId) return;
+
+    const localFallback = (() => {
+      if (!Array.isArray(scorecard) || scorecard.length === 0) return null;
+
+      const ranked = [...scorecard]
+        .map((p: any) => {
+          const runs = Number(p?.battingRuns || 0);
+          const balls = Number(p?.battingBalls || 0);
+          const fours = Number(p?.fours || 0);
+          const sixes = Number(p?.sixes || 0);
+          const wickets = Number(p?.wickets || 0);
+          const runsConceded = Number(p?.runsConceded || 0);
+          const catches = Number(p?.catches || 0);
+          const runOuts = Number(p?.runOuts || 0);
+          const strikeRate = balls > 0 ? (runs / balls) * 100 : 0;
+
+          const score =
+            runs * 1.2 +
+            fours * 0.8 +
+            sixes * 1.3 +
+            wickets * 22 +
+            catches * 8 +
+            runOuts * 10 +
+            Math.max(0, (strikeRate - 100) * 0.1) -
+            runsConceded * 0.15;
+
+          return {
+            playerName: p?.playerId?.playername || "Unknown",
+            score,
+          };
+        })
+        .sort((a, b) => b.score - a.score);
+
+      if (!ranked[0]?.playerName) return null;
+      return {
+        playerName: ranked[0].playerName,
+        reason: "Selected from batting, bowling, and fielding impact.",
+      };
+    })();
+
+    if (localFallback) {
+      setPlayerOfMatch(localFallback);
+    }
+
+    const fetchPlayerOfMatch = async () => {
+      try {
+        setPlayerOfMatchLoading(true);
+        const res = await axios.get(`${URL}/api/ai/player-of-match/${matchId}`);
+        if (res.data?.playerName) {
+          setPlayerOfMatch(res.data);
+        } else if (localFallback) {
+          setPlayerOfMatch(localFallback);
+        }
+      } catch (error) {
+        if (localFallback) {
+          setPlayerOfMatch(localFallback);
+        }
+      } finally {
+        setPlayerOfMatchLoading(false);
+      }
+    };
+
+    fetchPlayerOfMatch();
+  }, [state?.status, innings, scorecard, matchId]);
+
   // Auto-refresh live data every 3 seconds
   // useEffect(() => {
   //   const interval = setInterval(() => {
@@ -154,13 +248,125 @@ const MatchDetails = () => {
   // Get ongoing inning
   const ongoingInning = innings.find((inn: any) => inn.status === "ongoing");
 
-  const teamAInning = innings.find(
-  (inn: any) => inn.battingTeam?._id === match.teamA._id
-);
+  const normalize = (value: string) => (value || "").trim().toLowerCase();
+  const teamAName = normalize(match.teamA?.teamname || "");
+  const teamBName = normalize(match.teamB?.teamname || "");
 
-const teamBInning = innings.find(
-  (inn: any) => inn.battingTeam?._id === match.teamB._id
-);
+  const teamAInning =
+    innings.find((inn: any) => normalize(inn.battingTeam?.teamname || "") === teamAName) ||
+    innings.find((inn: any) => inn.inningNumber === 1) ||
+    innings[0];
+
+  const teamBInning =
+    innings.find((inn: any) => normalize(inn.battingTeam?.teamname || "") === teamBName) ||
+    innings.find((inn: any) => inn.inningNumber === 2) ||
+    innings[1];
+
+const inningsRunChartData = innings.map((inn: any) => ({
+  label: inn.battingTeam?.teamname || `Innings ${inn.inningNumber}`,
+  value: Number(inn.totalRuns || 0),
+}));
+
+const runRateTrendData = innings.map((inn: any) => {
+  const completedOvers = Number(inn.oversCompleted || 0);
+  const ballsInOver = Number(inn.ballsInCurrentOver || 0);
+  const oversBowled = completedOvers + ballsInOver / 6;
+  const runRate = oversBowled > 0 ? Number((Number(inn.totalRuns || 0) / oversBowled).toFixed(2)) : 0;
+
+  return {
+    label: inn.battingTeam?.teamname || `Innings ${inn.inningNumber}`,
+    runRate,
+    overs: oversBowled.toFixed(1),
+  };
+});
+
+const calculateOverRuns = (balls: Ball[]) => {
+  const overRuns: number[] = [];
+  let currentOverRuns = 0;
+  let legalBalls = 0;
+
+  balls.forEach((ball: Ball) => {
+    currentOverRuns += Number(ball.runsScored || 0) + Number(ball.extraRuns || 0);
+
+    const isLegalBall = ball.extraType !== "wide" && ball.extraType !== "no-ball";
+    if (isLegalBall) {
+      legalBalls += 1;
+    }
+
+    if (legalBalls === 6) {
+      overRuns.push(currentOverRuns);
+      currentOverRuns = 0;
+      legalBalls = 0;
+    }
+  });
+
+  if (legalBalls > 0 || currentOverRuns > 0) {
+    overRuns.push(currentOverRuns);
+  }
+
+  return overRuns;
+};
+
+useEffect(() => {
+  const fetchOverRuns = async () => {
+    if (!innings.length) {
+      setInningOverRuns({});
+      return;
+    }
+
+    try {
+      const overResults = await Promise.allSettled(
+        innings.map(async (inn) => {
+          const res = await axios.get(`${URL}/api/ball/overs/${inn._id}`);
+          const balls = Array.isArray(res.data) ? res.data : [];
+          return { inningId: inn._id, runsByOver: calculateOverRuns(balls) };
+        })
+      );
+
+      const runsMap: Record<string, number[]> = {};
+      overResults.forEach((result) => {
+        if (result.status === "fulfilled") {
+          const { inningId, runsByOver } = result.value;
+          runsMap[inningId] = runsByOver;
+        }
+      });
+      setInningOverRuns(runsMap);
+    } catch (error) {
+      console.log("Unable to fetch over-wise runs");
+    }
+  };
+
+  fetchOverRuns();
+}, [innings]);
+
+const teamAOverRuns = teamAInning ? inningOverRuns[teamAInning._id] || [] : [];
+const teamBOverRuns = teamBInning ? inningOverRuns[teamBInning._id] || [] : [];
+const maxOvers = Math.max(teamAOverRuns.length, teamBOverRuns.length);
+const overByOverComparisonData = Array.from({ length: maxOvers }, (_, index) => ({
+  over: `Over ${index + 1}`,
+  teamA: teamAOverRuns[index] ?? 0,
+  teamB: teamBOverRuns[index] ?? 0,
+}));
+
+const topBatters = [...scorecard]
+  .filter((p: any) => Number(p?.battingRuns || 0) > 0)
+  .sort((a: any, b: any) => Number(b?.battingRuns || 0) - Number(a?.battingRuns || 0))
+  .slice(0, 5)
+  .map((p: any) => ({
+    label: p.playerId?.playername || "Unknown",
+    value: Number(p.battingRuns || 0),
+    meta: `${Number(p.battingBalls || 0)} balls`,
+  }));
+
+const topBowlers = [...scorecard]
+  .filter((p: any) => Number(p?.wickets || 0) > 0)
+  .sort((a: any, b: any) => Number(b?.wickets || 0) - Number(a?.wickets || 0))
+  .slice(0, 5)
+  .map((p: any) => ({
+    label: p.playerId?.playername || "Unknown",
+    value: Number(p.wickets || 0),
+    meta: `${Number(p.runsConceded || 0)} runs conceded`,
+  }));
 
   // --------- socket.io 
 useEffect(() => {
@@ -320,6 +526,12 @@ useEffect(() => {
           onClick={() => setActiveTab("players")}
         >
           Players
+        </button>
+        <button
+          className={`tab-button ${activeTab === "charts" ? "tab-button--active" : ""}`}
+          onClick={() => setActiveTab("charts")}
+        >
+          Charts
         </button>
       </div>
 
@@ -529,6 +741,27 @@ useEffect(() => {
         {/* PLAYERS TAB */}
         {activeTab === "players" && (
           <>
+            {(
+              ["finished", "completed"].includes(String(match?.status || "").toLowerCase()) ||
+              (innings.length > 0 && innings.every((inn) => inn.status === "completed"))
+            ) && (
+              <div className="card">
+                <h3 className="card-title">AI Player of the Match</h3>
+                {playerOfMatchLoading ? (
+                  <p className="no-data">Generating AI decision...</p>
+                ) : playerOfMatch?.playerName ? (
+                  <div className="pom-wrap">
+                    <p className="pom-name">{playerOfMatch.playerName}</p>
+                    <p className="pom-reason">
+                      {playerOfMatch.reason || "Best overall impact in this match."}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="no-data">Player of the Match not available yet</p>
+                )}
+              </div>
+            )}
+
             {/* Team Filter */}
             <div className="team-filter">
               <button
@@ -604,6 +837,145 @@ useEffect(() => {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* CHARTS TAB */}
+        {activeTab === "charts" && (
+          <>
+            <div className="card">
+              <h3 className="card-title">Innings Runs Comparison</h3>
+              <div className="chart-list">
+                {inningsRunChartData.length > 0 ? (
+                  <div className="chart-wrapper">
+                    <ResponsiveContainer width="100%" height={280}>
+                      <BarChart data={inningsRunChartData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="value" name="Runs" radius={[8, 8, 0, 0]}>
+                          {inningsRunChartData.map((_, idx) => (
+                            <Cell key={`innings-${idx}`} fill="#f97316" />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <p className="no-data">No innings data available</p>
+                )}
+              </div>
+            </div>
+
+            <div className="card">
+              <h3 className="card-title">Over-by-Over Runs Comparison</h3>
+              <div className="chart-list">
+                {overByOverComparisonData.length > 0 ? (
+                  <div className="chart-wrapper">
+                    <ResponsiveContainer width="100%" height={280}>
+                      <LineChart data={overByOverComparisonData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="over" tick={{ fontSize: 12 }} />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Line
+                          type="monotone"
+                          dataKey="teamA"
+                          name={match.teamA.teamname}
+                          stroke="#0ea5e9"
+                          strokeWidth={3}
+                          dot={{ r: 4, fill: "#0ea5e9" }}
+                          activeDot={{ r: 7 }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="teamB"
+                          name={match.teamB.teamname}
+                          stroke="#f97316"
+                          strokeWidth={3}
+                          dot={{ r: 4, fill: "#f97316" }}
+                          activeDot={{ r: 7 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <p className="no-data">No over-wise data available yet</p>
+                )}
+              </div>
+            </div>
+
+            <div className="live-grid">
+              <div className="card">
+                <h3 className="card-title">Top Batters</h3>
+                <div className="chart-list">
+                  {topBatters.length > 0 ? (
+                    <>
+                      <div className="chart-wrapper">
+                        <ResponsiveContainer width="100%" height={280}>
+                          <BarChart data={topBatters}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar dataKey="value" name="Runs" radius={[8, 8, 0, 0]}>
+                              {topBatters.map((_, idx) => (
+                                <Cell key={`bat-${idx}`} fill="#f59e0b" />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="chart-meta-list">
+                        {topBatters.map((item) => (
+                          <span key={`${item.label}-meta`} className="chart-meta">
+                            {item.label}: {item.meta}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <p className="no-data">No batting stats available yet</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="card">
+                <h3 className="card-title">Top Bowlers (Wickets)</h3>
+                <div className="chart-list">
+                  {topBowlers.length > 0 ? (
+                    <>
+                      <div className="chart-wrapper">
+                        <ResponsiveContainer width="100%" height={280}>
+                          <BarChart data={topBowlers}>
+                            <CartesianGrid strokeDasharray="3 3" />
+                            <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                            <YAxis />
+                            <Tooltip />
+                            <Bar dataKey="value" name="Wickets" radius={[8, 8, 0, 0]}>
+                              {topBowlers.map((_, idx) => (
+                                <Cell key={`bowl-${idx}`} fill="#8b5cf6" />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                      <div className="chart-meta-list">
+                        {topBowlers.map((item) => (
+                          <span key={`${item.label}-meta`} className="chart-meta">
+                            {item.label}: {item.meta}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <p className="no-data">No wicket stats available yet</p>
+                  )}
+                </div>
               </div>
             </div>
           </>
