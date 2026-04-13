@@ -1,10 +1,25 @@
-const Loader = () => {
+import React from 'react';
+import './Style/Loadnig.css';
+
+interface LoadingProps {
+  message?: string;
+  fullScreen?: boolean;
+}
+
+const Loading: React.FC<LoadingProps> = ({ 
+  message = 'Loading...', 
+  fullScreen = false
+}) => {
   return (
-    <div className="flex flex-col items-center justify-center h-[80vh] gap-3">
-      <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
-      <p className="text-gray-400 text-sm">Loading...</p>
+    <div className={`loading-container ${fullScreen ? 'loading-fullscreen' : ''}`}>
+      <div className="cricket-pitch">
+        <div className="pitch-line"></div>
+        <div className="running-batsman"></div>
+        <div className="running-batsman batsman-2"></div>
+      </div>
+      <p className="loading-text">{message}</p>
     </div>
   );
 };
 
-export default Loader;
+export default Loading;
