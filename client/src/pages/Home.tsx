@@ -4,6 +4,9 @@
   import { toast } from "react-toastify";
   import { io } from "socket.io-client";
 
+  import Loader from "../components/Loader";
+
+
   const URL = import.meta.env.VITE_API_URL;
   const socket = io(URL);
 
@@ -48,13 +51,20 @@
     const [filter, setFilter] = useState("all");
     const navigate = useNavigate();
 
+
+    const [loading, setLoading] = useState(true);
+
     const fetchMatches = async () => {
+
+      setLoading(true);
+
       const token = localStorage.getItem("token");
       const res = await fetch(`${URL}/api/match/all`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (res.ok) setMatches(data);
+       setLoading(false);
     };
 
     //  INITIAL LOAD
