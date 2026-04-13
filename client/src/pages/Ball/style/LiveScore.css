@@ -48,11 +48,13 @@ body {
 /* ── Live Container ── */
 .live-container {
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   padding: 24px 16px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  overflow-x: hidden;
 }
 
 /* ── Live Grid ── */
@@ -68,8 +70,7 @@ body {
     grid-template-areas:
       "score score"
       "crease addball"
-      "over addball"
-      "commentary commentary";
+      "over addball";
   }
 }
 
@@ -78,10 +79,9 @@ body {
 .player-box { grid-area: crease; }
 .run-buttons-card { grid-area: addball; }
 .over-box { grid-area: over; }
-.commentry-box { grid-area: commentary; }
 
 /* ── Cards ── */
-.score-box, .player-box, .run-buttons-card, .over-box, .commentry-box, .scorecard-box {
+.score-box, .player-box, .run-buttons-card, .over-box, .scorecard-box {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
@@ -104,6 +104,7 @@ body {
   font-weight: 900;
   color: var(--white);
   letter-spacing: -0.02em;
+  word-break: break-word;
 }
 
 .score-right {
@@ -117,6 +118,7 @@ body {
   font-size: 18px;
   font-weight: 700;
   color: var(--orange-lt);
+  overflow-wrap: anywhere;
 }
 
 .target-text {
@@ -149,10 +151,18 @@ body {
 .player-name {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  row-gap: 6px;
   font-size: 16px;
   font-weight: 500;
   padding: 8px 0;
   border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.player-stats {
+  margin-left: 8px;
+  color: #aaa;
+  overflow-wrap: anywhere;
 }
 
 .player-name.striker {
@@ -188,6 +198,7 @@ body {
 .bowler-stats {
   font-size: 13px;
   color: var(--muted-lt);
+  overflow-wrap: anywhere;
 }
 
 /* ── Run Buttons Card ── */
@@ -306,25 +317,6 @@ body {
 .ball-item.is-four { background: var(--teal); color: var(--dark); border: none; }
 .ball-item.is-six { background: var(--gold); color: var(--dark); border: none; }
 .ball-item.is-wide, .ball-item.is-noball { border-color: var(--blue); color: var(--blue); }
-
-/* ── Commentary Box ── */
-.commentry-box {
-  max-height: 300px;
-  overflow-y: auto;
-}
-
-.comment-line {
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-  font-size: 14px;
-  color: var(--muted-lt);
-  line-height: 1.5;
-}
-
-.comment-line:first-child {
-  color: var(--white);
-  font-weight: 500;
-}
 
 /* ── Popups ── */
 .popup-box {
@@ -481,3 +473,152 @@ body {
 
 /* ── Utility ── */
 .hidden { display: none; }
+
+/* ── MOBILE RESPONSIVE FIX ── */
+@media (max-width: 768px) {
+
+  .live-container {
+    padding: 12px 10px;
+    gap: 14px;
+  }
+
+  /* Cards smaller */
+  .score-box, .player-box, .run-buttons-card, .over-box {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  /* Score smaller */
+  .score-main {
+    font-size: 28px;
+  }
+
+  .score-right {
+    width: 100%;
+  }
+
+  .overs-text {
+    font-size: 14px;
+  }
+
+  .target-text,
+  .rr-text {
+    font-size: 12px;
+  }
+
+  /* Player names compact */
+  .player-name {
+    font-size: 14px;
+    padding: 6px 0;
+  }
+
+  .player-stats {
+    margin-left: 20px;
+    width: 100%;
+  }
+
+  /* Run buttons grid fix */
+  .run-buttons {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .run-btn, .wicket-btn, .extra-btn {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  .undo-btn {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  /* Over balls smaller */
+  .ball-item {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  /* Fix score layout stacking */
+  .score-box {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .score-right {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+}
+
+/* ── FORCE FULL WIDTH ON MOBILE ── */
+@media (max-width: 768px) {
+
+  .live-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* Make all sections full width */
+  .score-box,
+  .player-box,
+  .run-buttons-card,
+  .over-box {
+    width: 100%;
+  }
+
+}
+
+/* Scoped overrides to avoid collisions with other page CSS */
+.live-score-page .live-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 1024px) {
+  .live-score-page .live-grid {
+    grid-template-columns: 1.2fr 0.8fr;
+    grid-template-areas:
+      "score score"
+      "crease addball"
+      "over addball";
+  }
+}
+
+.live-score-page .score-box { grid-area: score; }
+.live-score-page .player-box { grid-area: crease; }
+.live-score-page .run-buttons-card { grid-area: addball; }
+.live-score-page .over-box { grid-area: over; }
+
+.live-score-page .ball-item {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+
+@media (max-width: 768px) {
+  .live-score-page .live-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .live-score-page .score-box,
+  .live-score-page .player-box,
+  .live-score-page .run-buttons-card,
+  .live-score-page .over-box {
+    width: 100%;
+  }
+
+  .live-score-page .ball-item {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+}

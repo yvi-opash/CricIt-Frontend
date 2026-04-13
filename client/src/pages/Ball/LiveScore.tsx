@@ -26,7 +26,6 @@ const LiveScore = () => {
   const [overBall, setOverBall] = useState<any[]>([]);
   const [players, setPlayers] = useState<any[]>([]);
   const [inningInfo, setInningInfo] = useState<any>({});
-  const [commentry, setCommentry] = useState<string[]>([]);
 
   const [matchEnd, setMatchEnd] = useState(false);
   const [matchResult, setMatchResult] = useState<any>(null);
@@ -56,9 +55,6 @@ const LiveScore = () => {
   const loadData = async () => {
     const scoreRes = await axios.get(`${URL}/api/ball/score/${inningId}`);
     setScore(scoreRes.data);
-
-    const commentryRes = await axios.get(`${URL}/api/ball/commentary/${inningId}`,);
-    setCommentry(commentryRes.data);
 
     const overRes = await axios.get(`${URL}/api/ball/overs/${inningId}`);
     setOverBall(overRes.data);
@@ -242,7 +238,7 @@ const LiveScore = () => {
 
 
   return (
-    <div className="live-container">
+    <div className="live-container live-score-page">
 
       {/* start 222 */}
       {inningInfo.status === "completed" && inningInfo.inningNumber === 1 && (
@@ -287,7 +283,7 @@ const LiveScore = () => {
             {inningInfo.striker?.playername}
             <span className="on-strike">*</span>
 
-            <span style={{ marginLeft: "8px", color: "#aaa" }}>
+            <span className="player-stats">
               {strikerStats?.battingRuns || 0} ({strikerStats?.battingBalls || 0})
             </span>
           </div>
@@ -297,7 +293,7 @@ const LiveScore = () => {
             <span className="dot"></span>
             {inningInfo.nonStriker?.playername}
 
-            <span style={{ marginLeft: "8px", color: "#aaa" }}>
+            <span className="player-stats">
               {nonStrikerStats?.battingRuns || 0} ({nonStrikerStats?.battingBalls || 0})
             </span>
 
@@ -384,15 +380,6 @@ const LiveScore = () => {
           ))}
         </div> */}
 
-        <div className="commentry-box">
-          <h3 className="section-title">Commentary</h3>
-          {commentry.map((c, i) => (
-            <p className="comment-line" key={i}>
-              {" "}
-              {c}
-            </p>
-          ))}
-        </div>
       </div>
 
       {wicket && (
