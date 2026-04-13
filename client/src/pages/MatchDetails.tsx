@@ -75,7 +75,13 @@ const MatchDetails = () => {
       const commentRes = await axios.get(
         `${URL}/api/ball/commentary/${inningId}`
       );
-      setCommentary(commentRes.data || []);
+      const incomingCommentary = Array.isArray(commentRes.data)
+        ? commentRes.data
+        : Array.isArray(commentRes.data?.commentary)
+        ? commentRes.data.commentary
+        : [];
+
+      setCommentary(incomingCommentary.filter((line: unknown) => typeof line === "string"));
 
       const overRes = await axios.get(`${URL}/api/ball/overs/${inningId}`);
       setCurrentOver(overRes.data || []);
@@ -162,15 +168,31 @@ useEffect(() => {
 
   socket.emit("joinInning", ongoingInning._id);
 
-  socket.on("scoreUpdate", () => {
-    fetchLiveData(ongoingInning._id); 
-    fetchInnings(); 
-  });
+  const onScoreUpdate = (payload: {
+    inningId?: string;
+    commentary?: string | null;
+  }) => {
+    if (payload?.inningId && payload.inningId !== ongoingInning._id) return;
+
+    if (payload?.commentary) {
+      setCommentary((prev: any) => {
+        // avoid duplicate same line
+        if (prev[0] === payload.commentary) return prev;
+        return [payload.commentary, ...prev].slice(0, 100);
+      });
+    }
+
+    // refresh score/over UI
+    fetchInnings();
+    fetchLiveData(ongoingInning._id);
+  };
+
+  socket.on("scoreUpdate", onScoreUpdate);
 
   return () => {
-    socket.off("scoreUpdate");
+    socket.off("scoreUpdate", onScoreUpdate);
   };
-}, [ongoingInning]);
+}, [ongoingInning?._id]);
 
   return (
     <div className="details-page design3">
