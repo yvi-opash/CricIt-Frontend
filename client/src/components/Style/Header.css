@@ -98,6 +98,18 @@
   color: var(--orange);
 }
 
+.match-source-tabs {
+  flex: 1;
+  justify-content: center;
+  min-width: 0;
+}
+
+.match-source-tabs a {
+  font-size: 11px;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+
 /* ── User section ── */
 .user-section {
   display: flex;
@@ -264,12 +276,25 @@
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-  .nav-menu {
-    display: none;
-  }
-
   .header-container {
     padding: 0 16px;
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 56px;
+    row-gap: 6px;
+  }
+
+  .match-source-tabs {
+    order: 3;
+    flex: none;
+    width: 100%;
+    justify-content: center;
+    padding: 4px 0 2px;
+  }
+
+  .match-source-tabs a {
+    font-size: 10px;
+    padding: 6px 8px;
   }
 
   .user-section {

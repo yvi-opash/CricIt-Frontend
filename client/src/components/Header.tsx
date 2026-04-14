@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './Style/Header.css'
 import MenuIcon from '@mui/icons-material/Menu';
@@ -52,14 +52,25 @@ const Header = () => {
           <p className="tagline">Live Cricket Score </p>
         </div>
 
-{/* 
-        <nav className="nav-menu">
-          <Link to="/">Dashboard</Link>
-          <Link to="/team">Teams</Link>
-          <Link to="/player">Players</Link>
-          <Link to="/match">Create Match</Link>
-        </nav> */}
-
+        <nav className="nav-menu match-source-tabs" aria-label="Match source">
+          <NavLink
+            to="/"
+            end
+            className={({ isActive }) =>
+              isActive ? 'active' : undefined
+            }
+          >
+            Local matches
+          </NavLink>
+          <NavLink
+            to="/bcci-matches"
+            className={({ isActive }) =>
+              isActive ? 'active' : undefined
+            }
+          >
+            BCCI matches
+          </NavLink>
+        </nav>
 
         <div className="user-section">
 

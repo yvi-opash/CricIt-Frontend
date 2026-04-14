@@ -25,6 +25,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import MyMatches from "./pages/Match/MyMatches";
 import Admin from "./pages/admin/Admin";
+import BcciMatches from "./pages/BcciMatches";
 function App() {
   return (
     <BrowserRouter>
@@ -33,6 +34,7 @@ function App() {
       <LiveHeader />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/bcci-matches" element={<BcciMatches />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         {/* <Route path="/77777" element={<OneMatchCard/>}/> */}
