@@ -3,7 +3,7 @@
   import "./styles/Home.css";
   import { toast } from "react-toastify";
   import Loader from "../components/Loader";
-  import { socket } from "../socket";
+  import { getSocket } from "../socket";
 
 
   const URL = import.meta.env.VITE_API_URL;
@@ -70,14 +70,15 @@
       fetchMatches();
     }, []);
 
-    //  SOCKET 
+    //  SOCKET (lazy connect — only when Home is mounted)
     useEffect(() => {
-      socket.on("scoreUpdate", () => {
+      const s = getSocket();
+      const onScoreUpdate = () => {
         fetchMatches();
-      });
-
+      };
+      s.on("scoreUpdate", onScoreUpdate);
       return () => {
-        socket.off("scoreUpdate");
+        s.off("scoreUpdate", onScoreUpdate);
       };
     }, []);
 

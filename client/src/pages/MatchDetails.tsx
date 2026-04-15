@@ -16,7 +16,7 @@ import {
   YAxis,
 } from "recharts";
 
-import { socket } from "../socket";
+import { getSocket } from "../socket";
 
 
 interface Inning {
@@ -366,11 +366,12 @@ const topBowlers = [...scorecard]
     meta: `${Number(p.runsConceded || 0)} runs conceded`,
   }));
 
-  // --------- socket.io 
+  // --------- socket.io (lazy connect — only on this page)
 useEffect(() => {
   if (!ongoingInning?._id) return;
 
-  socket.emit("joinInning", ongoingInning._id);
+  const s = getSocket();
+  s.emit("joinInning", ongoingInning._id);
 
   const onScoreUpdate = (payload: {
     inningId?: string;
@@ -391,10 +392,10 @@ useEffect(() => {
     fetchLiveData(ongoingInning._id);
   };
 
-  socket.on("scoreUpdate", onScoreUpdate);
+  s.on("scoreUpdate", onScoreUpdate);
 
   return () => {
-    socket.off("scoreUpdate", onScoreUpdate);
+    s.off("scoreUpdate", onScoreUpdate);
   };
 }, [ongoingInning?._id]);
 

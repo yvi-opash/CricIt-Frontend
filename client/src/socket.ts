@@ -1,8 +1,19 @@
-import { io } from "socket.io-client";
+import { io, type Socket } from "socket.io-client";
 
 const URL = import.meta.env.VITE_API_URL;
 
-/** Prefer WebSocket over polling to avoid slow long-polling XHRs on every tick. */
-export const socket = io(URL, {
-  transports: ["websocket", "polling"],
-});
+let socket: Socket | null = null;
+
+/**
+ * Connect only when a page that needs realtime actually mounts.
+ * Eager `io()` at module load ran for every route (because Home is in the bundle),
+ * which starved Render free-tier connections and broke unrelated API calls.
+ */
+export function getSocket(): Socket {
+  if (!socket) {
+    socket = io(URL, {
+      transports: ["websocket", "polling"],
+    });
+  }
+  return socket;
+}
