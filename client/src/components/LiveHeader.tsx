@@ -29,22 +29,19 @@ const LiveHeader = () => {
 
       const live = matches.filter((m: any) => m.status === "live");
 
-      let finalData: any[] = [];
-
-      for (let match of live) {
-        const inningRes = await fetch(`${URL}/api/inning/match/${match._id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const innings = await inningRes.json();
-
-        const ongoing = innings.find((i: any) => i.status === "ongoing");
-
-        finalData.push({
-          ...match,
-          inning: ongoing || null,
-        });
-      }
+      const finalData = await Promise.all(
+        live.map(async (match: any) => {
+          const inningRes = await fetch(
+            `${URL}/api/inning/match/${match._id}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          const innings = await inningRes.json();
+          const ongoing = innings.find((i: any) => i.status === "ongoing");
+          return { ...match, inning: ongoing || null };
+        })
+      );
 
       setLiveMatches(finalData);
     } catch (error) {

@@ -2,13 +2,11 @@
   import { useNavigate } from "react-router-dom";
   import "./styles/Home.css";
   import { toast } from "react-toastify";
-  import { io } from "socket.io-client";
-
   import Loader from "../components/Loader";
+  import { socket } from "../socket";
 
 
   const URL = import.meta.env.VITE_API_URL;
-  const socket = io(URL);
 
   interface Team {
     _id: string;

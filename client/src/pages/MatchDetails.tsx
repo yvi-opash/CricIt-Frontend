@@ -16,7 +16,7 @@ import {
   YAxis,
 } from "recharts";
 
-import { io } from "socket.io-client";
+import { socket } from "../socket";
 
 
 interface Inning {
@@ -48,8 +48,6 @@ interface PlayerOfMatchResult {
 }
 
 const URL = import.meta.env.VITE_API_URL;
-const socket = io(URL);
-
 
 
 const MatchDetails = () => {
