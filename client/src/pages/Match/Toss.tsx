@@ -54,6 +54,16 @@ import { toast } from "react-toastify";
     const handlSubmit = async(e: React.FormEvent) => {
       e.preventDefault();
 
+      if (!tossWinner) {
+        toast.error("Please select who won the toss");
+        return;
+      }
+
+      if (!tossDecision) {
+        toast.error("Please select a decision (Bat or Bowl)");
+        return;
+      }
+
       const reasponce = await fetch(`${URL}/api/match/toss/${matchId}`, {
         method : "POST",
         headers : {

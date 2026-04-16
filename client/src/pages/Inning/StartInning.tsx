@@ -80,7 +80,9 @@ const StartInning = () => {
       let battingTeamPlayers: Player[] = [];
       let bowlingTeamPlayers: Player[] = [];
 
-      if (match.tossDecision === "bat") {
+      const decision = match.tossDecision || "bat";
+
+      if (decision === "bat") {
         if (winnerTeamId === teamAId) {
           battingTeamPlayers = match.playingTeamA;
           bowlingTeamPlayers = match.playingTeamB;
@@ -88,7 +90,7 @@ const StartInning = () => {
           battingTeamPlayers = match.playingTeamB;
           bowlingTeamPlayers = match.playingTeamA;
         }
-      } else if (match.tossDecision === "bowl") {
+      } else if (decision === "bowl") {
         if (winnerTeamId === teamAId) {
           battingTeamPlayers = match.playingTeamB;
           bowlingTeamPlayers = match.playingTeamA;
