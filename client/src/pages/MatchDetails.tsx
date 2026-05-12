@@ -17,6 +17,7 @@ import {
 } from "recharts";
 
 import { getSocket } from "../socket";
+import PlayerCard from "../components/PlayerCard";
 
 
 interface Inning {
@@ -55,7 +56,8 @@ const MatchDetails = () => {
   const navigate = useNavigate();
   const { matchId } = useParams();
 
-  // State management
+  const [match, setMatch] = useState<any>(state || null);
+  const [matchLoading, setMatchLoading] = useState(!state);
   const [scorecard, setScorecard] = useState<any[]>([]);
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"live" | "stats" | "players" | "charts">("live");
@@ -65,6 +67,20 @@ const MatchDetails = () => {
   const [inningOverRuns, setInningOverRuns] = useState<Record<string, number[]>>({});
   const [playerOfMatch, setPlayerOfMatch] = useState<PlayerOfMatchResult | null>(null);
   const [playerOfMatchLoading, setPlayerOfMatchLoading] = useState(false);
+
+  // Fetch match details
+  const fetchMatch = async () => {
+    if (!matchId) return;
+    try {
+      if (!match) setMatchLoading(true);
+      const res = await axios.get(`${URL}/api/match/detail/${matchId}`);
+      setMatch(res.data);
+    } catch (error) {
+      console.log("Error fetching match details:", error);
+    } finally {
+      setMatchLoading(false);
+    }
+  };
 
   // Fetch scorecard data
   const fetchScorecard = async () => {
@@ -98,10 +114,25 @@ const MatchDetails = () => {
       const incomingCommentary = Array.isArray(commentRes.data)
         ? commentRes.data
         : Array.isArray(commentRes.data?.commentary)
-        ? commentRes.data.commentary
-        : [];
+          ? commentRes.data.commentary
+          : [];
 
-      setCommentary(incomingCommentary.filter((line: unknown) => typeof line === "string"));
+      setCommentary((prev) => {
+        const newList = incomingCommentary.filter((line: unknown) => typeof line === "string");
+        // Merge intelligently to keep AI text if fetch returns generic for same ball
+        if (prev.length > 0 && newList.length > 0) {
+          const prevTop = prev[0];
+          const newTop = newList[0];
+          const prevPrefix = prevTop.match(/^Over \d+\.\d+/)?.[0];
+          const newPrefix = newTop.match(/^Over \d+\.\d+/)?.[0];
+          
+          if (prevPrefix === newPrefix && !newTop.includes("run") && prevTop.length > newTop.length) {
+             // Keep the existing AI text if the fetched one is a generic placeholder
+             return prev;
+          }
+        }
+        return newList;
+      });
 
       const overRes = await axios.get(`${URL}/api/ball/overs/${inningId}`);
       setCurrentOver(overRes.data || []);
@@ -113,6 +144,7 @@ const MatchDetails = () => {
   // Initial load
   useEffect(() => {
     if (matchId) {
+      fetchMatch();
       fetchScorecard();
       fetchInnings();
     }
@@ -198,7 +230,7 @@ const MatchDetails = () => {
     };
 
     fetchPlayerOfMatch();
-  }, [state?.status, innings, scorecard, matchId]);
+  }, [match?.status, innings, scorecard, matchId]);
 
   // Auto-refresh live data every 3 seconds
   // useEffect(() => {
@@ -220,7 +252,11 @@ const MatchDetails = () => {
   };
 
   // Error state
-  if (!state)
+  if (matchLoading && !match) {
+    return <div className="details-loading">Loading match details...</div>;
+  }
+
+  if (!match)
     return (
       <div className="details-error">
         <p>No match data found.</p>
@@ -229,8 +265,6 @@ const MatchDetails = () => {
         </button>
       </div>
     );
-
-  const match = state;
 
   // Teams data
   const teamsData = [
@@ -260,144 +294,218 @@ const MatchDetails = () => {
     innings.find((inn: any) => inn.inningNumber === 2) ||
     innings[1];
 
-const inningsRunChartData = innings.map((inn: any) => ({
-  label: inn.battingTeam?.teamname || `Innings ${inn.inningNumber}`,
-  value: Number(inn.totalRuns || 0),
-}));
-
-const runRateTrendData = innings.map((inn: any) => {
-  const completedOvers = Number(inn.oversCompleted || 0);
-  const ballsInOver = Number(inn.ballsInCurrentOver || 0);
-  const oversBowled = completedOvers + ballsInOver / 6;
-  const runRate = oversBowled > 0 ? Number((Number(inn.totalRuns || 0) / oversBowled).toFixed(2)) : 0;
-
-  return {
+  const inningsRunChartData = innings.map((inn: any) => ({
     label: inn.battingTeam?.teamname || `Innings ${inn.inningNumber}`,
-    runRate,
-    overs: oversBowled.toFixed(1),
-  };
-});
+    value: Number(inn.totalRuns || 0),
+  }));
 
-const calculateOverRuns = (balls: Ball[]) => {
-  const overRuns: number[] = [];
-  let currentOverRuns = 0;
-  let legalBalls = 0;
+  const runRateTrendData = innings.map((inn: any) => {
+    const completedOvers = Number(inn.oversCompleted || 0);
+    const ballsInOver = Number(inn.ballsInCurrentOver || 0);
+    const oversBowled = completedOvers + ballsInOver / 6;
+    const runRate = oversBowled > 0 ? Number((Number(inn.totalRuns || 0) / oversBowled).toFixed(2)) : 0;
 
-  balls.forEach((ball: Ball) => {
-    currentOverRuns += Number(ball.runsScored || 0) + Number(ball.extraRuns || 0);
-
-    const isLegalBall = ball.extraType !== "wide" && ball.extraType !== "no-ball";
-    if (isLegalBall) {
-      legalBalls += 1;
-    }
-
-    if (legalBalls === 6) {
-      overRuns.push(currentOverRuns);
-      currentOverRuns = 0;
-      legalBalls = 0;
-    }
+    return {
+      label: inn.battingTeam?.teamname || `Innings ${inn.inningNumber}`,
+      runRate,
+      overs: oversBowled.toFixed(1),
+    };
   });
 
-  if (legalBalls > 0 || currentOverRuns > 0) {
-    overRuns.push(currentOverRuns);
-  }
+  const calculateOverRuns = (balls: Ball[]) => {
+    const overRuns: number[] = [];
+    let currentOverRuns = 0;
+    let legalBalls = 0;
 
-  return overRuns;
-};
+    balls.forEach((ball: Ball) => {
+      currentOverRuns += Number(ball.runsScored || 0) + Number(ball.extraRuns || 0);
 
-useEffect(() => {
-  const fetchOverRuns = async () => {
-    if (!innings.length) {
-      setInningOverRuns({});
-      return;
+      const isLegalBall = ball.extraType !== "wide" && ball.extraType !== "no-ball";
+      if (isLegalBall) {
+        legalBalls += 1;
+      }
+
+      if (legalBalls === 6) {
+        overRuns.push(currentOverRuns);
+        currentOverRuns = 0;
+        legalBalls = 0;
+      }
+    });
+
+    if (legalBalls > 0 || currentOverRuns > 0) {
+      overRuns.push(currentOverRuns);
     }
 
-    try {
-      const overResults = await Promise.allSettled(
-        innings.map(async (inn) => {
-          const res = await axios.get(`${URL}/api/ball/overs/${inn._id}`);
-          const balls = Array.isArray(res.data) ? res.data : [];
-          return { inningId: inn._id, runsByOver: calculateOverRuns(balls) };
-        })
-      );
-
-      const runsMap: Record<string, number[]> = {};
-      overResults.forEach((result) => {
-        if (result.status === "fulfilled") {
-          const { inningId, runsByOver } = result.value;
-          runsMap[inningId] = runsByOver;
-        }
-      });
-      setInningOverRuns(runsMap);
-    } catch (error) {
-      console.log("Unable to fetch over-wise runs");
-    }
+    return overRuns;
   };
 
-  fetchOverRuns();
-}, [innings]);
+  useEffect(() => {
+    const fetchOverRuns = async () => {
+      if (!innings.length) {
+        setInningOverRuns({});
+        return;
+      }
 
-const teamAOverRuns = teamAInning ? inningOverRuns[teamAInning._id] || [] : [];
-const teamBOverRuns = teamBInning ? inningOverRuns[teamBInning._id] || [] : [];
-const maxOvers = Math.max(teamAOverRuns.length, teamBOverRuns.length);
-const overByOverComparisonData = Array.from({ length: maxOvers }, (_, index) => ({
-  over: `Over ${index + 1}`,
-  teamA: teamAOverRuns[index] ?? 0,
-  teamB: teamBOverRuns[index] ?? 0,
-}));
+      try {
+        const overResults = await Promise.allSettled(
+          innings.map(async (inn) => {
+            const res = await axios.get(`${URL}/api/ball/overs/${inn._id}`);
+            const balls = Array.isArray(res.data) ? res.data : [];
+            return { inningId: inn._id, runsByOver: calculateOverRuns(balls) };
+          })
+        );
 
-const topBatters = [...scorecard]
-  .filter((p: any) => Number(p?.battingRuns || 0) > 0)
-  .sort((a: any, b: any) => Number(b?.battingRuns || 0) - Number(a?.battingRuns || 0))
-  .slice(0, 5)
-  .map((p: any) => ({
-    label: p.playerId?.playername || "Unknown",
-    value: Number(p.battingRuns || 0),
-    meta: `${Number(p.battingBalls || 0)} balls`,
+        const runsMap: Record<string, number[]> = {};
+        overResults.forEach((result) => {
+          if (result.status === "fulfilled") {
+            const { inningId, runsByOver } = result.value;
+            runsMap[inningId] = runsByOver;
+          }
+        });
+        setInningOverRuns(runsMap);
+      } catch (error) {
+        console.log("Unable to fetch over-wise runs");
+      }
+    };
+
+    fetchOverRuns();
+  }, [innings]);
+
+  const teamAOverRuns = teamAInning ? inningOverRuns[teamAInning._id] || [] : [];
+  const teamBOverRuns = teamBInning ? inningOverRuns[teamBInning._id] || [] : [];
+  const maxOvers = Math.max(teamAOverRuns.length, teamBOverRuns.length);
+  const overByOverComparisonData = Array.from({ length: maxOvers }, (_, index) => ({
+    over: `Over ${index + 1}`,
+    teamA: teamAOverRuns[index] ?? 0,
+    teamB: teamBOverRuns[index] ?? 0,
   }));
 
-const topBowlers = [...scorecard]
-  .filter((p: any) => Number(p?.wickets || 0) > 0)
-  .sort((a: any, b: any) => Number(b?.wickets || 0) - Number(a?.wickets || 0))
-  .slice(0, 5)
-  .map((p: any) => ({
-    label: p.playerId?.playername || "Unknown",
-    value: Number(p.wickets || 0),
-    meta: `${Number(p.runsConceded || 0)} runs conceded`,
-  }));
+  const topBatters = [...scorecard]
+    .filter((p: any) => Number(p?.battingRuns || 0) > 0)
+    .sort((a: any, b: any) => Number(b?.battingRuns || 0) - Number(a?.battingRuns || 0))
+    .slice(0, 5)
+    .map((p: any) => ({
+      label: p.playerId?.playername || "Unknown",
+      value: Number(p.battingRuns || 0),
+      meta: `${Number(p.battingBalls || 0)} balls`,
+    }));
+
+  const topBowlers = [...scorecard]
+    .filter((p: any) => Number(p?.wickets || 0) > 0)
+    .sort((a: any, b: any) => Number(b?.wickets || 0) - Number(a?.wickets || 0))
+    .slice(0, 5)
+    .map((p: any) => ({
+      label: p.playerId?.playername || "Unknown",
+      value: Number(p.wickets || 0),
+      meta: `${Number(p.runsConceded || 0)} runs conceded`,
+    }));
+
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
+
+  // Voice Commentary function
+  const speakCommentary = (text: string, over?: string, score?: string) => {
+    if (!isVoiceEnabled || !window.speechSynthesis) return;
+
+    // Stop any current speech
+    window.speechSynthesis.cancel();
+
+    const cleanText = text.replace(/^Over \d+\.\d+ - /, "").trim();
+
+    let speechText = "";
+    if (over) speechText += `Over ${over}. `;
+    speechText += `${cleanText}. `;
+    
+    if (score) {
+      const [r, w] = score.split("/");
+      if (r !== undefined && w !== undefined) {
+        speechText += `Score is ${r} runs for ${w} wickets.`;
+      } else {
+        speechText += `Score is ${score}.`;
+      }
+    }
+
+    const utterance = new SpeechSynthesisUtterance(speechText);
+    
+    // Select a female voice
+    const voices = window.speechSynthesis.getVoices();
+    const femaleVoice = voices.find(v => 
+      v.name.toLowerCase().includes('female') || 
+      v.name.toLowerCase().includes('zira') || 
+      v.name.toLowerCase().includes('google uk english f') ||
+      v.name.toLowerCase().includes('samantha') ||
+      v.name.toLowerCase().includes('victoria')
+    );
+    
+    if (femaleVoice) {
+      utterance.voice = femaleVoice;
+    }
+
+    utterance.rate = 0.95; // Slightly faster for a more natural female tone
+    utterance.pitch = 1.1; // Slightly higher pitch
+    window.speechSynthesis.speak(utterance);
+  };
 
   // --------- socket.io (lazy connect — only on this page)
-useEffect(() => {
-  if (!ongoingInning?._id) return;
+  useEffect(() => {
+    if (!ongoingInning?._id) return;
 
-  const s = getSocket();
-  s.emit("joinInning", ongoingInning._id);
+    const s = getSocket();
+    s.emit("joinInning", ongoingInning._id);
 
-  const onScoreUpdate = (payload: {
-    inningId?: string;
-    commentary?: string | null;
-  }) => {
-    if (payload?.inningId && payload.inningId !== ongoingInning._id) return;
+    const onScoreUpdate = (payload: any) => {
+      if (payload?.inningId && payload.inningId !== ongoingInning._id) return;
 
-    if (payload?.commentary) {
-      setCommentary((prev: any) => {
-        // avoid duplicate same line
-        if (prev[0] === payload.commentary) return prev;
-        return [payload.commentary, ...prev].slice(0, 100);
-      });
-    }
+      if (payload?.commentary) {
+        setCommentary((prev: any) => {
+          if (prev[0] === payload.commentary) return prev;
+          return [payload.commentary, ...prev].slice(0, 100);
+        });
+        
+        // Initial voice for score update if it has commentary
+        speakCommentary(payload.commentary, payload.score?.overs, `${payload.score?.runs} for ${payload.score?.wickets}`);
+      }
 
-    // refresh score/over UI
-    fetchInnings();
-    fetchLiveData(ongoingInning._id);
-  };
+      fetchInnings();
+      fetchLiveData(ongoingInning._id);
+    };
 
-  s.on("scoreUpdate", onScoreUpdate);
+    const onCommentaryUpdate = (payload: any) => {
+      if (payload?.inningId && payload.inningId !== ongoingInning._id) return;
 
-  return () => {
-    s.off("scoreUpdate", onScoreUpdate);
-  };
-}, [ongoingInning?._id]);
+      if (payload?.commentary) {
+        setCommentary((prev: any) => {
+          // Extract "Over X.Y" from the new commentary
+          const overMatch = payload.commentary.match(/^Over \d+\.\d+/);
+          const currentOverPrefix = overMatch ? overMatch[0] : null;
+
+          if (currentOverPrefix) {
+            // Search in top entries to see if we have a placeholder to replace
+            const existingIndex = prev.findIndex((c: string) => c.startsWith(currentOverPrefix));
+            if (existingIndex !== -1) {
+              const updated = [...prev];
+              updated[existingIndex] = payload.commentary;
+              return updated;
+            }
+          }
+
+          // fallback: avoid duplicate same line
+          if (prev[0] === payload.commentary) return prev;
+          return [payload.commentary, ...prev].slice(0, 100);
+        });
+
+        // Trigger voice for the detailed AI commentary
+        speakCommentary(payload.commentary, payload.overs, payload.score);
+      }
+    };
+
+    s.on("scoreUpdate", onScoreUpdate);
+    s.on("commentaryUpdate", onCommentaryUpdate);
+
+    return () => {
+      s.off("scoreUpdate", onScoreUpdate);
+      s.off("commentaryUpdate", onCommentaryUpdate);
+    };
+  }, [ongoingInning?._id, isVoiceEnabled]);
 
   return (
     <div className="details-page design3">
@@ -410,12 +518,19 @@ useEffect(() => {
       <div className="match-hero">
         <div className="match-hero__header">
           <div className="match-meta">
-            {match.matchType && (
-              <span className="meta-badge">{match.matchType.toUpperCase()}</span>
-            )}
+            <span className="meta-badge">
+              {(match.matchType || match.type || "T20").toUpperCase()}
+            </span>
             <span className={`meta-badge meta-badge--${match.status}`}>
               {match.status.toUpperCase()}
             </span>
+            <button 
+              className={`voice-toggle ${isVoiceEnabled ? 'voice-toggle--active' : ''}`}
+              onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
+              title={isVoiceEnabled ? "Turn off voice commentary" : "Turn on voice commentary"}
+            >
+              {isVoiceEnabled ? "🔊 Voice On" : "🔈 Voice Off"}
+            </button>
           </div>
           <h1 className="match-title-hero">
             {match.teamA.teamname} vs {match.teamB.teamname}
@@ -458,46 +573,46 @@ useEffect(() => {
             </>
           )}
         </div> */}
-      
+
         <div className="score-grid-hero">
-  {innings && innings.length > 0 ? (
-    innings.map((inn: any, idx: number) => (
-      <div key={idx} className="score-box-hero">
-        <p className="score-label">{inn.battingTeam.teamname}</p>
+          {innings && innings.length > 0 ? (
+            innings.map((inn: any, idx: number) => (
+              <div key={idx} className="score-box-hero">
+                <p className="score-label">{inn.battingTeam.teamname}</p>
 
-        <div className="score-display">
-          <span className="score-runs">{inn.totalRuns}</span>
-          <span className="score-slash">/</span>
-          <span className="score-wickets">{inn.totalWickets}</span>
-        </div>
+                <div className="score-display">
+                  <span className="score-runs">{inn.totalRuns}</span>
+                  <span className="score-slash">/</span>
+                  <span className="score-wickets">{inn.totalWickets}</span>
+                </div>
 
-        <p className="score-overs">
-          ({inn.oversCompleted}.{inn.ballsInCurrentOver} ov)
-        </p>
-      </div>
-    ))
-  ) : (
-    <>
-      <div className="score-box-hero">
-        <p className="score-label">{match.teamA.teamname}</p>
-        <div className="score-display">
-          <span className="score-runs">—</span>
-          <span className="score-slash">/</span>
-          <span className="score-wickets">—</span>
-        </div>
-      </div>
+                <p className="score-overs">
+                  ({inn.oversCompleted}.{inn.ballsInCurrentOver} ov)
+                </p>
+              </div>
+            ))
+          ) : (
+            <>
+              <div className="score-box-hero">
+                <p className="score-label">{match.teamA.teamname}</p>
+                <div className="score-display">
+                  <span className="score-runs">—</span>
+                  <span className="score-slash">/</span>
+                  <span className="score-wickets">—</span>
+                </div>
+              </div>
 
-      <div className="score-box-hero">
-        <p className="score-label">{match.teamB.teamname}</p>
-        <div className="score-display">
-          <span className="score-runs">—</span>
-          <span className="score-slash">/</span>
-          <span className="score-wickets">—</span>
+              <div className="score-box-hero">
+                <p className="score-label">{match.teamB.teamname}</p>
+                <div className="score-display">
+                  <span className="score-runs">—</span>
+                  <span className="score-slash">/</span>
+                  <span className="score-wickets">—</span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
-      </div>
-    </>
-  )}
-</div>
 
         {match.winner && (
           <div className="winner-badge">
@@ -549,17 +664,16 @@ useEffect(() => {
                     currentOver.slice(-6).map((b: any, i: number) => (
                       <span
                         key={i}
-                        className={`ball-item ${
-                          b.isWicket ? "ball-wicket" : ""
-                        } ${b.extraType ? "ball-extra" : ""}`}
+                        className={`ball-item ${b.isWicket ? "ball-wicket" : ""
+                          } ${b.extraType ? "ball-extra" : ""}`}
                       >
                         {b.isWicket
                           ? "W"
                           : b.extraType === "wide"
-                          ? "Wd"
-                          : b.extraType === "no-ball"
-                          ? "Nb"
-                          : b.runsScored}
+                            ? "Wd"
+                            : b.extraType === "no-ball"
+                              ? "Nb"
+                              : b.runsScored}
                       </span>
                     ))
                   ) : (
@@ -646,11 +760,34 @@ useEffect(() => {
               <div className="commentary-scroll">
                 {commentary && commentary.length > 0 ? (
                   <div className="commentary-list">
-                    {commentary.map((c: string, i: number) => (
-                      <div key={i} className="commentary-item">
-                        <p className="commentary-text">{c}</p>
-                      </div>
-                    ))}
+                    {commentary.map((c: string, i: number) => {
+                      const scoreMatch = c.match(/\(Score: (.*?)\)$/);
+                      const overMatch = c.match(/^Over (\d+\.\d+)/);
+                      
+                      let textOnly = c.replace(/\(Score: (.*?)\)$/, "").trim();
+                      if (overMatch) {
+                        textOnly = textOnly.replace(/^Over \d+\.\d+ - /, "").trim();
+                      }
+
+                      const scoreVal = scoreMatch ? scoreMatch[1] : null;
+                      const overVal = overMatch ? overMatch[1] : null;
+
+                      return (
+                        <div key={i} className="commentary-item">
+                          <div className="commentary-row">
+                            <div className="commentary-content">
+                               {overVal && <span className="commentary-over-label">{overVal}</span>}
+                               <p className="commentary-text">{textOnly}</p>
+                            </div>
+                            {scoreVal && (
+                              <span className="commentary-score">
+                                {scoreVal}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="no-data">No commentary yet</p>
@@ -670,12 +807,12 @@ useEffect(() => {
                 <div className="info-row">
                   <span className="info-label">Match Type</span>
                   <span className="info-value">
-                    {match.matchType ? match.matchType.toUpperCase() : "—"}
+                    {(match.matchType || match.type || "T20").toUpperCase()}
                   </span>
                 </div>
                 <div className="info-row">
                   <span className="info-label">Status</span>
-                  <span className="info-value" style={{textTransform: 'capitalize'}}>
+                  <span className="info-value" style={{ textTransform: 'capitalize' }}>
                     {match.status}
                   </span>
                 </div>
@@ -744,21 +881,21 @@ useEffect(() => {
               ["finished", "completed"].includes(String(match?.status || "").toLowerCase()) ||
               (innings.length > 0 && innings.every((inn) => inn.status === "completed"))
             ) && (
-              <div className="card">
-                <h3 className="card-title">AI Predicted Player of the Match</h3>
-                {playerOfMatchLoading ? (
-                  <p className="no-data">Generating AI decision...</p>
-                ) : playerOfMatch?.playerName ? (
-                  <div className="pom-wrap">
+                <div className="card">
+                  <h3 className="card-title">AI Predicted Player of the Match</h3>
+                  {playerOfMatchLoading ? (
+                    <p className="no-data">Generating AI decision...</p>
+                  ) : playerOfMatch?.playerName ? (
+                    <div className="pom-wrap">
 
-                    
-                    <p className="pom-name">{playerOfMatch.playerName}</p>
-                  </div>
-                ) : (
-                  <p className="no-data">Player of the Match not available yet</p>
-                )}
-              </div>
-            )}
+
+                      <p className="pom-name">{playerOfMatch.playerName}</p>
+                    </div>
+                  ) : (
+                    <p className="no-data">Player of the Match not available yet</p>
+                  )}
+                </div>
+              )}
 
             {/* Team Filter */}
             <div className="team-filter">
@@ -800,33 +937,21 @@ useEffect(() => {
                           const runsGiven = stats?.runsConceded || 0;
 
                           return (
-                            <div
+                            <PlayerCard
                               key={p._id}
-                              className="player-card"
+                              playername={p.playername}
+                              role={p.role || "Player"}
+                              teamName={label}
+                              stats={{
+                                runs: `${runs}(${balls})`,
+                                sr: strikeRate,
+                                wickets: wickets,
+                                fours: stats?.fours || 0,
+                                sixes: stats?.sixes || 0,
+                                eco: bowlerBalls > 0 ? (runsGiven / (bowlerBalls / 6)).toFixed(1) : "0.0"
+                              }}
                               onClick={() => navigate(`/player-history/${p._id}`)}
-                            >
-                              <div className="player-card-header">
-                                <p className="player-name">{p.playername}</p>
-                                <p className="player-number">#{i + 1}</p>
-                              </div>
-
-                              <div className="player-stats-row">
-                                <div className="stat-box">
-                                  <p className="stat-label">Batting</p>
-                                  <p className="stat-value">
-                                    {runs}({balls})
-                                  </p>
-                                  <p className="stat-meta">SR: {strikeRate}</p>
-                                </div>
-                                <div className="stat-box">
-                                  <p className="stat-label">Bowling</p>
-                                  <p className="stat-value">
-                                    {wickets}/{runsGiven}
-                                  </p>
-                                  <p className="stat-meta">{overs} ov</p>
-                                </div>
-                              </div>
-                            </div>
+                            />
                           );
                         })
                       ) : (

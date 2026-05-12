@@ -47,7 +47,7 @@
   <text x="527" y="118" font-family="'Syne', system-ui, sans-serif" font-size="72" font-weight="800" fill="#f97316" letter-spacing="-2" style="fill:rgb(249, 115, 22);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:Syne, system-ui, sans-serif;font-size:72px;font-weight:800;text-anchor:start;dominant-baseline:auto">.IT</text>
 
   <!-- tagline -->
-  <text x="322" y="152" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#78716c" letter-spacing="3" style="fill:rgb(120, 113, 108);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:system-ui, sans-serif;font-size:14px;font-weight:500;text-anchor:start;dominant-baseline:auto">LIVE CRICKET SCORING</text>
+  <text x="322" y="152" font-family="system-ui, sans-serif" font-size="14" font-weight="500" fill="#78716c" letter-spacing="3" style="fill:rgb(120, 113, 108);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:system-ui, sans-serif;font-size:14px;font-weight:500;text-anchor:start;dominant-baseline:auto">REAL-TIME CRICKET INTELLIGENCE</text>
 
   <!-- divider line -->
   <rect x="320" y="168" width="300" height="2" rx="1" fill="#f97316" opacity="0.35" style="fill:rgb(249, 115, 22);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.35;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>

@@ -6,8 +6,10 @@ const Footer = () => {
       <div className="footer-divider"></div>
       <div className="footer-container">
         <div className="footer-column">
-          <h3>Cric.It</h3>
-          <p>Live cricket scoring platform</p>
+          <div className="footer-brand">
+            <img src="/Cric_It_Light.svg" alt="Cric.It" className="footer-logo" />
+          </div>
+          <p>Advanced Real-Time Cricket Intelligence for professionals and fans.</p>
         </div>
 
         <div className="footer-column">

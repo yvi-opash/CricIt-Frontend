@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "./styles/BcciMatches.css";
 import Loader from "../components/Loader";
@@ -69,6 +70,7 @@ const scoreByTeam = (match: CricMatch, teamName: string) => {
 };
 
 const BcciMatches = () => {
+  const navigate = useNavigate();
   const [matches, setMatches] = useState<CricMatch[]>([]);
   const [loading, setLoading] = useState(true);
   const [offset, setOffset] = useState(0);
@@ -153,7 +155,12 @@ const BcciMatches = () => {
           const teamBScore = scoreByTeam(match, teamB) || match.score?.[1];
 
           return (
-            <article key={match.id} className="bcci-card-home">
+            <article 
+              key={match.id} 
+              className="bcci-card-home"
+              onClick={() => navigate(`/bcci-match-info/${match.id}`)}
+              style={{ cursor: 'pointer' }}
+            >
               <div className="bcci-card__top">
                 <div className="bcci-card__badges">
                   {match.matchType && (

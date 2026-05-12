@@ -119,11 +119,13 @@
 
       return runs !== undefined ? (
         <div className="team-row__score">
-          <span className="score-runs-home">
-            {runs}
-            <span className="score-wickets-home">/ {wickets}</span>
-          </span>
-          <span className="score-overs">({overs} overs)</span>
+          <div className="score-main">
+            <span className="score-runs-home">
+              {runs}
+              <span className="score-wickets-home">/{wickets}</span>
+            </span>
+            <span className="score-overs">({overs})</span>
+          </div>
         </div>
       ) : (
         <span className="score-empty">—</span>
@@ -172,13 +174,11 @@
                   isLive ? "match-card--live" : ""
                 }`}
               >
-                <div className="match-card__top">
+                <div className="match-card__header">
                   <div className="match-card__badges">
-                    {match.matchType && (
-                      <span className="badge badge--type">
-                        {match.matchType.toUpperCase()}
-                      </span>
-                    )}
+                    <span className="badge badge--format">
+                      {(match.matchType || match.type || "T20").toUpperCase()}
+                    </span>
                     <span className={`badge badge--${match.status}`}>
                       {isLive && <span className="live-dot" />}
                       {match.status.toUpperCase()}
@@ -186,47 +186,58 @@
                   </div>
                 </div>
 
-                <div className="match-card__divider" />
+                <div className="match-card__main">
+                  <div className="match-card__team-area">
+                    {/* Team A */}
+                    <div className="team-block">
+                      <div className="team-avatar">{match.teamA.teamname[0]}</div>
+                      <span className="team-block__name">{match.teamA.teamname}</span>
+                      {renderScore(match, match.teamA._id, match.teamAScore)}
+                    </div>
 
-                <div className="match-card__teams-home">
-                  {/* Team A */}
-                  <div className="team-row">
-                    <span className="team-row__name">
-                      {match.teamA.teamname}
-                    </span>
-                    {renderScore(match, match.teamA._id, match.teamAScore)}
-                  </div>
+                    <div className="vs-divider">
+                      <div className="vs-line" />
+                      <div className="vs-circle">VS</div>
+                      <div className="vs-line" />
+                    </div>
 
-                  <div className="vs-row">VS</div>
-
-                  {/* Team B */}
-                  <div className="team-row">
-                    <span className="team-row__name">
-                      {match.teamB.teamname}
-                    </span>
-                    {renderScore(match, match.teamB._id, match.teamBScore)}
+                    {/* Team B */}
+                    <div className="team-block">
+                      <div className="team-avatar">{match.teamB.teamname[0]}</div>
+                      <span className="team-block__name">{match.teamB.teamname}</span>
+                      {renderScore(match, match.teamB._id, match.teamBScore)}
+                    </div>
                   </div>
                 </div>
 
-                {showTarget && inn2 && (
-                  <div className="target-bar">
-                    🎯 Target: {inn2.target} • Need{" "}
-                    {(inn2.target ?? 0) - inn2.totalRuns}
-                  </div>
-                )}
+                <div className="match-card__extra">
+                  {showTarget && inn2 && (
+                    <div className="match-banner target-banner">
+                      <span className="banner-icon">🎯</span>
+                      <div className="banner-content">
+                        <strong>Target: {inn2.target}</strong>
+                        <span>Need {(inn2.target ?? 0) - inn2.totalRuns} runs</span>
+                      </div>
+                    </div>
+                  )}
 
-                {match.winner && (
-                  <div className="result-banner">
-                    🎉 {match.winner.teamname} won the match
-                  </div>
-                )}
+                  {match.winner && (
+                    <div className="match-banner winner-banner">
+                      <span className="banner-icon">🏆</span>
+                      <div className="banner-content">
+                        <strong>{match.winner.teamname} won</strong>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <div className="match-card__footer">
                   <button
-                    className="details-btn"
+                    className="action-btn-primary"
                     onClick={() => handleViewDetails(match._id)}
                   >
-                    View Details
+                    <span>View Analytics</span>
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                   </button>
                 </div>
               </div>

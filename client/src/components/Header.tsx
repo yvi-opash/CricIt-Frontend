@@ -44,13 +44,9 @@ const Header = () => {
       <div className="header-container">
 
 
-        <div className="logo-section">
-          <Link to="/" className="logo" onClick={closeDropdowns}>
-            <img src="/Cric_It.svg" alt="cric.it" className="logo-icon" />
-            Cric<span>.It</span>
+          <Link to="/" className="logo-link" onClick={closeDropdowns}>
+            <img src="/Cric_It.svg" alt="Cric.It - Real-Time Cricket Intelligence" className="main-logo" />
           </Link>
-          <p className="tagline">Live Cricket Score </p>
-        </div>
 
         <nav className="nav-menu match-source-tabs" aria-label="Match source">
           <NavLink

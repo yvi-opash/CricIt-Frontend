@@ -22,48 +22,32 @@
 }
 
 /* ── Logo section ── */
-.logo-section {
+.logo-link {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
+  align-items: center;
+  text-decoration: none;
+  transition: transform 0.2s ease;
   flex-shrink: 0;
 }
 
-.logo {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--dark);
-  text-decoration: none;
-  letter-spacing: -0.5px;
-  line-height: 1;
-  transition: color 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.logo-link:hover {
+  transform: scale(1.02);
 }
 
-.logo-icon {
-  width: 40px;
-  height: 40px;
+.main-logo {
+  height: 70px;
+  width: auto;
+  min-width: 240px;
   object-fit: contain;
+  display: block;
 }
 
-.logo span {
-  color: var(--orange);
-}
 
-.logo:hover {
-  color: var(--orange);
-}
-
-.tagline {
-  font-size: 10px;
-  font-weight: 650;
-  color: var(--orange);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  line-height: 1;
+@media (max-width: 768px) {
+  .main-logo {
+    height: 38px;
+    min-width: 120px;
+  }
 }
 
 /* ── Nav menu ── */

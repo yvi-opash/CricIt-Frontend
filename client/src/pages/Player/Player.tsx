@@ -22,11 +22,11 @@ interface Team {
   teamname: string;
 }
 
+import PlayerCard from "../../components/PlayerCard";
+
 const Player = () => {
-
   const navigate = useNavigate();
-
-
+  const [viewType, setViewType] = useState<"table" | "cards">("cards");
   const [players, setPlayers] = useState<Player[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
@@ -237,9 +237,38 @@ const Player = () => {
       {/* Player Table */}
 
       <div className="player-table-card">
-        <h2 className="player-title">Player List</h2>
+        <div className="view-header">
+          <h2 className="player-title">Player List</h2>
+          <div className="view-toggle">
+            <button 
+              className={`toggle-btn ${viewType === 'cards' ? 'active' : ''}`}
+              onClick={() => setViewType('cards')}
+            >
+              Cards
+            </button>
+            <button 
+              className={`toggle-btn ${viewType === 'table' ? 'active' : ''}`}
+              onClick={() => setViewType('table')}
+            >
+              Table
+            </button>
+          </div>
+        </div>
 
-        <div className="table-wrapper">
+        {viewType === 'cards' ? (
+          <div className="player-cards-grid">
+            {players.map((p, index) => (
+              <PlayerCard
+                key={p._id}
+                playername={p.playername}
+                role={p.role}
+                teamName={p.teamId?.teamname}
+                onClick={() => navigate(`/player-history/${p._id}`)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="table-wrapper">
           <table className="player-table">
             <thead>
               <tr>
@@ -280,6 +309,7 @@ const Player = () => {
             </tbody>
           </table>
         </div>
+        )}
 
       </div>
 

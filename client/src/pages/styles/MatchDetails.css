@@ -91,6 +91,35 @@
   background-color: rgba(239, 68, 68, 0.1);
 }
 
+.voice-toggle {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  background-color: var(--color-surface2);
+  border: 1px solid var(--color-border);
+  color: var(--color-muted-lt);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  text-transform: uppercase;
+}
+
+.voice-toggle:hover {
+  border-color: var(--color-orange);
+  color: var(--color-orange-lt);
+}
+
+.voice-toggle--active {
+  color: var(--color-orange);
+  border-color: var(--color-orange);
+  background-color: rgba(249, 115, 22, 0.1);
+  box-shadow: 0 0 15px rgba(249, 115, 22, 0.2);
+}
+
 .match-title-hero {
   font-size: 1.5rem;
   font-weight: 900;
@@ -234,7 +263,7 @@
 
 /* Cards */
 .card {
-  background-color: white;
+  background-color: #fdefe6;
   border-radius: 1rem;
   padding: 1.5rem;
   border: 1px solid var(--color-bg2);
@@ -352,10 +381,48 @@
   border-bottom: none;
 }
 
+.commentary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.commentary-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.commentary-over-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--color-muted);
+  background-color: rgba(250, 235, 215, 0.5);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  min-width: 2.5rem;
+  text-align: center;
+}
+
 .commentary-text {
   font-size: 0.875rem;
   line-height: 1.625;
   color: rgba(28, 25, 23, 0.8);
+  margin: 0;
+}
+
+.commentary-score {
+  background-color: var(--color-orange);
+  color: white;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2);
 }
 
 /* Stats Info */
@@ -506,20 +573,10 @@
 
 .player-cards-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-
-@media (min-width: 640px) {
-  .player-cards-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (min-width: 1024px) {
-  .player-cards-grid {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 2rem;
+  justify-items: center;
+  padding: 1rem 0;
 }
 
 .player-card {

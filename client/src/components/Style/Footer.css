@@ -31,14 +31,18 @@
   gap: 10px;
 }
 
-.footer-column h3 {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--white);
-  letter-spacing: -0.3px;
+.footer-brand {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
 }
-.footer-column h3 span { color: var(--orange); }
+
+.footer-logo {
+  height: 56px;
+  width: auto;
+  min-width: 220px;
+  object-fit: contain;
+}
 
 .footer-column p {
   font-size: 13px;

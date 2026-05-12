@@ -278,3 +278,46 @@
 }
  
 
+/* View Toggle & Cards Grid */
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.view-toggle {
+  display: flex;
+  background: var(--surface2);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted-lt);
+  padding: 6px 16px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.toggle-btn.active {
+  background: var(--orange);
+  color: #fff;
+  box-shadow: 0 4px 12px var(--orange-glow);
+}
+
+.player-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  justify-items: center;
+  padding: 10px 0;
+}
