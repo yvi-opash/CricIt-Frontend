@@ -37,6 +37,7 @@
     teamB: Team;
     status: string;
     matchType?: string;
+    type?: string;
     matchDate?: string;
     teamAScore?: Score;
     teamBScore?: Score;
