@@ -1,5 +1,5 @@
 import React from 'react';
-import './Style/Loadnig.css'
+import './Style/Loader.css'
 
 interface LoadingProps {
   message?: string;
@@ -7,26 +7,17 @@ interface LoadingProps {
 }
 
 const Loading: React.FC<LoadingProps> = ({ 
-  message = 'Loading', 
+  message = 'Analyzing Pitch', 
   fullScreen = false
 }) => {
-
-
   return (
     <div className={`loading-container ${fullScreen ? 'loading-fullscreen' : ''}`}>
-      
-      
-
-      <div className="cricket-info">
-        <span className="loading-subtext">CricIt</span>
-        <span className="ball-icon">🏏</span>
+      <div className="modern-loader">
+        <div className="loader-circle"></div>
+        <div className="loader-inner-circle"></div>
+        <div className="loader-ball"></div>
       </div>
-
-      <div className="cricket-dots">
-        <div className="dot"></div>
-        <div className="dot"></div>
-        <div className="dot"></div>
-      </div>
+      <div className="loader-text">{message}...</div>
     </div>
   );
 };
