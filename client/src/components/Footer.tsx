@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="footer-container">
         <div className="footer-column">
           <div className="footer-brand">
-            <img src="/Cric_It_Light.svg" alt="Cric.It" className="footer-logo" />
+            <img src="/fav4.webp" alt="Cric.It" className="footer-logo" />
           </div>
           <p>Advanced Real-Time Cricket Intelligence for professionals and fans.</p>
         </div>

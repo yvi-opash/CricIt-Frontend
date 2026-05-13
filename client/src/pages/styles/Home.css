@@ -1,57 +1,87 @@
-/* ── High-Contrast "Dark-Pro" Home Page Styles ── */
 .home-page {
-  padding: 4rem 2rem;
+  padding: 2rem 1rem;
   max-width: 1440px;
   margin: 0 auto;
-  background-color: #f1f5f9; /* Modern light-slate background */
   min-height: 100vh;
 }
 
 .home-header {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
-  margin-bottom: 5rem;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
 }
 
 @media (min-width: 768px) {
+  .home-page {
+    padding: 4rem 2rem;
+  }
   .home-header {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    gap: 2.5rem;
+    margin-bottom: 5rem;
   }
 }
 
 .home-title {
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: 900;
   color: #0f172a;
   letter-spacing: -0.05em;
   text-transform: uppercase;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .home-title {
+    font-size: 3rem;
+  }
 }
 
 .filter-bar {
   display: flex;
-  gap: 1rem;
-  padding: 0.75rem;
+  gap: 0.5rem;
+  padding: 0.5rem;
   background: #ffffff;
-  border-radius: 20px;
+  border-radius: 16px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
   border: 1px solid #e2e8f0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.filter-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .filter-btns {
   background: transparent;
   border: none;
-  padding: 0.85rem 1.75rem;
-  border-radius: 14px;
-  font-size: 0.9rem;
+  padding: 0.6rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
   font-weight: 800;
   color: #64748b;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .filter-bar {
+    gap: 1rem;
+    padding: 0.75rem;
+    border-radius: 20px;
+  }
+  .filter-btns {
+    padding: 0.85rem 1.75rem;
+    font-size: 0.9rem;
+    border-radius: 14px;
+  }
 }
 
 .filter-btns:hover {
@@ -66,20 +96,16 @@
   box-shadow: 0 12px 20px -5px rgba(255, 107, 0, 0.4);
 }
 
-.filter-btn--active:hover {
-  background: #e65f00;
-  color: #ffffff;
-}
-
 .match-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-  gap: 3.5rem;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
 }
 
-@media (max-width: 500px) {
+@media (min-width: 768px) {
   .match-list {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 3.5rem;
   }
 }
 

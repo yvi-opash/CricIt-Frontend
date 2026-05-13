@@ -45,7 +45,7 @@ const Header = () => {
 
 
           <Link to="/" className="logo-link" onClick={closeDropdowns}>
-            <img src="/Cric_It.svg" alt="Cric.It - Real-Time Cricket Intelligence" className="main-logo" />
+            <img src="/fav4.webp" alt="Cric.It" className="main-logo" />
           </Link>
 
         <nav className="nav-menu match-source-tabs" aria-label="Match source">

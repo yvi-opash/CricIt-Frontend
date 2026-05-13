@@ -14,7 +14,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
-  height: 64px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -35,28 +35,34 @@
 }
 
 .main-logo {
-  height: 70px;
-  width: auto;
-  min-width: 240px;
+  height: 60px;
+  width: 60px;
   object-fit: contain;
   display: block;
 }
 
 
 @media (max-width: 768px) {
-  .main-logo {
-    height: 38px;
-    min-width: 120px;
+  .header-container {
+    height: auto;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
   }
-}
 
-/* ── Nav menu ── */
-.nav-menu {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: 1;
-  justify-content: center;
+  .main-logo {
+    height: 50px;
+    width: 50px;
+  }
+
+  .nav-menu {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    padding-top: 8px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+  }
 }
 
 .nav-menu a {
