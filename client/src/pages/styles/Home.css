@@ -1,6 +1,6 @@
 .home-page {
   padding: 2rem 1rem;
-  max-width: 1440px;
+  max-width: 1200px;
   margin: 0 auto;
   min-height: 100vh;
 }
@@ -104,8 +104,8 @@
 
 @media (min-width: 768px) {
   .match-list {
-    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-    gap: 3.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2.5rem;
   }
 }
 
