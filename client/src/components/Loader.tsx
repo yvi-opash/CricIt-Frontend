@@ -15,7 +15,7 @@ const Loading: React.FC<LoadingProps> = ({
       <div className="modern-loader">
         <div className="loader-circle"></div>
         <div className="loader-inner-circle"></div>
-        <div className="loader-ball"></div>
+        {/* <div className="loader-ball"></div> */}
       </div>
       <div className="loader-text">{message}...</div>
     </div>

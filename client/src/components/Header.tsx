@@ -13,12 +13,32 @@ const Header = () => {
   const [isLogedIn, setIsLogedIn] = useState(false);
   const [isNavDropdownOpen, setIsNavDropdownOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const token = localStorage.getItem('token')
 
   useEffect(() => {
     setIsLogedIn(!!token);
+    if (token) {
+      fetchUserProfile();
+    }
   }, [token]);
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch(`${URL}/api/users/profile`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (response.ok && data.user) {
+        if (data.user.username) setUserName(data.user.username);
+        if (data.user.role === 'admin') setIsAdmin(true);
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -95,9 +115,11 @@ const Header = () => {
                 <Link to="/match" className="dropdown-item" onClick={closeDropdowns}>
                   Create Match
                 </Link>
-                <Link to="/my-matches" className="dropdown-item" onClick={closeDropdowns}>
-                  My Matches
-                </Link>
+                {isAdmin && (
+                  <Link to="/admin" className="dropdown-item" onClick={closeDropdowns}>
+                    Admin Panel
+                  </Link>
+                )}
               </div>
             )}
           </div>)}
@@ -116,13 +138,16 @@ const Header = () => {
                 }}
               >
                 <AccountCircleIcon />
+                <span>{userName || 'Profile'}</span>
               </button>
               {isProfileDropdownOpen && (
                 <div className="dropdown-menu profile-dropdown">
                   <Link to="/profile" className="dropdown-item" onClick={closeDropdowns}>
                     My Profile
                   </Link>
-
+                  <Link to="/my-matches" className="dropdown-item" onClick={closeDropdowns}>
+                    My Matches
+                  </Link>
 
                   <button className="dropdown-item logout-item" onClick={handleLogout}>
                     Logout
